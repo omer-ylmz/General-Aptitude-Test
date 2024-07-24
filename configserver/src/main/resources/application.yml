@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: configserver
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/omer-ylmz/Gyt-Config-Server.git
+  profiles:
+    active: dev
+server:
+  port: 8050
