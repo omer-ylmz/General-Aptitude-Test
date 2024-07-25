@@ -1,4 +1,4 @@
-package com.gyt.managementservice.business.dtos.requests;
+package com.gyt.managementservice.business.dtos.requests.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +9,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class LoginRequest
-{
+public class RegisterRequest {
     private String email;
     private String password;
 }

@@ -22,9 +22,12 @@ public class SecurityConfiguration {
         baseSecurityService.configureCoreSecurity(http);
         http
                 .authorizeHttpRequests(req -> req
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/user/addOrganization").hasAnyAuthority("admin")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/user/getById/{id}").hasAnyAuthority("admin")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/user/getAll").hasAnyAuthority("admin")
+                        .requestMatchers(HttpMethod.PUT,"/api/v1/user/update").hasAnyAuthority("admin","organization")
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 );
         return http.build();
     }
