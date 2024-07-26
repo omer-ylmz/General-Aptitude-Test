@@ -79,6 +79,16 @@
 			<version>1.5.2.Final</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.5.6</version> <!-- Logback sürümü -->
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>2.0.13</version> <!-- SLF4J sürümü -->
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
