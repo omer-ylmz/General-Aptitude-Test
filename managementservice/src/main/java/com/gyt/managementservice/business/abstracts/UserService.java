@@ -10,9 +10,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService extends UserDetailsService {
     void addOrganization(RegisterRequest request);
-    GetUserResponse getByIdOrganization(Long id);
-    Page<GetAllUserResponse> getAllOrganization(int page, int size);
+    GetUserResponse getByIdUser(Long id);
+    Page<GetAllUserResponse> getAllUser(int page, int size);
     UpdatedUserResponse updatedUser(UpdatedUserRequest request);
+    GetUserResponse getAuthenticatedUser();
+    void deleteUserById(Long id);
 
 
 }

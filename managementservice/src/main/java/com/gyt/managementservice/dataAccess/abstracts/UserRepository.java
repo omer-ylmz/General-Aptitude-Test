@@ -2,8 +2,6 @@ package com.gyt.managementservice.dataAccess.abstracts;
 
 import com.gyt.managementservice.entities.concretes.User;
 import feign.Param;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

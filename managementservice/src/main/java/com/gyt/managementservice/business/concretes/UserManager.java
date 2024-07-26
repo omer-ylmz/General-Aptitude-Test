@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,14 +28,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
 public class UserManager implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final RoleRepository roleRepository;  // TODO: 25.07.2024 buradan kalkacak
     private final UserBusinessRules userBusinessRules;
     private final RoleService roleService;
 
@@ -47,6 +49,7 @@ public class UserManager implements UserService {
     @Override
     public void addOrganization(RegisterRequest request) {
         User user = UserMapper.INSTANCE.registerRequestToUser(request, passwordEncoder);
+
         GetRoleResponse roleResponse = roleService.getByIdRole(Long.valueOf(2));
         Role role = RoleMapper.INSTANCE.getResponseToRole(roleResponse);
         user.setAuthorities(Set.of(role));
@@ -54,39 +57,76 @@ public class UserManager implements UserService {
     }
 
     @Override
-    public GetUserResponse getByIdOrganization(Long id) {
+    public GetUserResponse getByIdUser(Long id) {
         userBusinessRules.userShouldBeExist(id);
-
-        User user = userRepository.findByIdAndRoleName(id, "organization").orElseThrow();
-        return UserMapper.INSTANCE.getUserToResponse(user);
+        User user = userRepository.findById(id).get();
+        Set<Role> roles = setUserAuthorities(user.getAuthorities());
+        List<String> roleNames = roles.stream()
+                .map(Role::getName)
+                .collect(Collectors.toList());
+        GetUserResponse getUserResponse = UserMapper.INSTANCE.getUserToResponse(user);
+        getUserResponse.setRoles(roleNames);
+        return getUserResponse;
     }
 
     @Override
-    public Page<GetAllUserResponse> getAllOrganization(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<GetAllUserResponse> getAllUser(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
         Page<User> usersPage = userRepository.findAll(pageable);
-        return usersPage.map(user -> UserMapper.INSTANCE.getAllResponseToEntity(user));
-
+        return usersPage.map(user -> {
+            GetAllUserResponse response = UserMapper.INSTANCE.getAllResponseToEntity(user);
+            List<String> roleNames = user.getAuthorities().stream()
+                    .map(Role::getName)
+                    .collect(Collectors.toList());
+            response.setRoleNames(roleNames);
+            return response;
+        });
     }
 
     @Override
     public UpdatedUserResponse updatedUser(UpdatedUserRequest request) {
         userBusinessRules.userShouldBeExist(request.getId());
-        User authenticatedUser = getAuthenticatedUser();
-        userBusinessRules.userUpdateAuthorizationCheck(authenticatedUser,request.getId());
+        User updateFoundUser = userRepository.findById(request.getId()).orElseThrow();
+        GetUserResponse authenticatedUser = getAuthenticatedUser();
+        Set<Role> authorities = updateFoundUser.getAuthorities();
+        userBusinessRules.userUpdateAuthorizationCheck(authenticatedUser, request.getId());
         User user = UserMapper.INSTANCE.updatedRequestToUser(request, passwordEncoder);
-        GetRoleResponse roleResponse = roleService.getByIdRole(Long.valueOf(2));
-        Role role = RoleMapper.INSTANCE.getResponseToRole(roleResponse);
-        user.setAuthorities(Set.of(role));
+        Set<Role> role = setUserAuthorities(authorities);
+        user.setAuthorities(role);
         userRepository.save(user);
         return UserMapper.INSTANCE.updatedUserToResponse(user);
     }
 
 
-    public User getAuthenticatedUser() {
+    public Set<Role> setUserAuthorities(Set<Role> authorities) {
+        for (Role role : authorities) {
+            if (role.getName().equals("organization")) {
+                return Set.of(role);
+            } else {
+                return Set.of(role);
+            }
+        }
+        return authorities;
+    }
+
+
+    public GetUserResponse getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         userBusinessRules.ifNotAuthenticated(authentication);
-        return userRepository.findByEmail(authentication.getPrincipal().toString()).orElseThrow();
+        User user = userRepository.findByEmail(authentication.getPrincipal().toString()).orElseThrow();
+        Set<Role> roles = user.getAuthorities();
+        List<String> roleNames = roles.stream()
+                .map(Role::getName)
+                .collect(Collectors.toList());
+        GetUserResponse getUserResponse = UserMapper.INSTANCE.getUserToResponse(user);
+        getUserResponse.setRoles(roleNames);
+        return getUserResponse;
+    }
+
+    @Override
+    public void deleteUserById(Long id) {
+        userBusinessRules.userShouldBeExist(id);
+        userRepository.deleteById(id);
     }
 
 }

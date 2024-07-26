@@ -26,6 +26,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/api/v1/user/getById/{id}").hasAnyAuthority("admin")
                         .requestMatchers(HttpMethod.GET, "/api/v1/user/getAll").hasAnyAuthority("admin")
                         .requestMatchers(HttpMethod.PUT,"/api/v1/user/update").hasAnyAuthority("admin","organization")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/user/delete/{id}").hasAnyAuthority("admin")
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .anyRequest().permitAll()
                 );
