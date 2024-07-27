@@ -22,10 +22,11 @@ public class AuthBusinessRules {
     // TODO: 26.07.2024 bu method başka bir hata daha basıyor !
     public void authenticationControl(LoginRequest request) {
         try {
-            log.info("authenticationControl");
+            log.info("Starting authentication process for user: {}", request.getEmail());
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+            log.info("Authentication successful for user: {}", request.getEmail());
         } catch (AuthenticationException e) {
-            log.error("authenticationControl failed {}", e);
+            log.error("Authentication failed for user: {}. Exception: {}", request.getEmail(), e.getMessage());
             throw new BusinessException(messageService.getMessage(Messages.AuthErrors.AuthenticationFailed));
         }
     }

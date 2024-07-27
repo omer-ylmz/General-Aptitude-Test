@@ -31,31 +31,50 @@ public class UserController {
 
     @GetMapping("/getById/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public GetUserResponse getByIdUser(@PathVariable Long id){
-        return userService.getByIdUser(id);
+    public GetUserResponse getByIdUser(@PathVariable Long id)
+    {
+        log.info("Received request to retrieve user by id: {}", id);
+        GetUserResponse getUserResponse = userService.getByIdUser(id);
+        log.info("Successfully retrieved user with ID: {}", id);
+        return getUserResponse;
     }
 
     @GetMapping("/getAll")
     @ResponseStatus(HttpStatus.OK)
-    public Page<GetAllUserResponse> getAllUser(@RequestParam int page, @RequestParam int size){
-        return userService.getAllUser(page,size);
+    public Page<GetAllUserResponse> getAllUser(@RequestParam int page, @RequestParam int size)
+    {
+        log.info("Received request to retrieve all users page : {}, size: {}", page, size);
+        Page<GetAllUserResponse> allUser = userService.getAllUser(page, size);
+        log.info("Successfully retrieved all users");
+        return allUser;
     }
 
     @PutMapping("/update")
     @ResponseStatus(HttpStatus.OK)
-    public UpdatedUserResponse updateUser(@RequestBody UpdatedUserRequest updatedUserRequest){
-        return userService.updatedUser(updatedUserRequest);
+    public UpdatedUserResponse updateUser(@RequestBody UpdatedUserRequest updatedUserRequest)
+    {
+        log.info("Request to update user with ID: {}", updatedUserRequest.getId());
+        UpdatedUserResponse updatedUserResponse = userService.updatedUser(updatedUserRequest);
+        log.info("Successfully updated user with ID: {}", updatedUserRequest.getId());
+        return updatedUserResponse;
     }
 
     @GetMapping("/getAuthenticatedUser")
     @ResponseStatus(HttpStatus.OK)
-    public GetUserResponse getAuthenticatedUser(){
-        return userService.getAuthenticatedUser();
+    public GetUserResponse getAuthenticatedUser()
+    {
+        log.info("Received request to retrieve authenticated user");
+        GetUserResponse authenticatedUser = userService.getAuthenticatedUser();
+        log.info("Successfully retrieved authenticated user");
+        return authenticatedUser;
     }
 
     @DeleteMapping("/delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUserById(@PathVariable Long id){
-         userService.deleteUserById(id);
+    public void deleteUserById(@PathVariable Long id)
+    {
+        log.info("Request to delete user by ID: {}", id);
+        userService.deleteUserById(id);
+        log.info("Successfully deleted user with ID: {}", id);
     }
 }
