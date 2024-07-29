@@ -1,16 +1,14 @@
-package com.gyt.managementservice.business.dtos.requests.request;
+package com.gyt.managementservice.business.dtos.request.update;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
-public class LoginRequest
-{
+@Data
+public class UpdatedUserRequest {
+    private Long id;
     private String email;
     private String password;
 }

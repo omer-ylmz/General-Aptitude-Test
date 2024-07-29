@@ -17,10 +17,9 @@ public class JwtService {
     private static final String SECRET_KEY = "12023660c1601aaada3da96a4a80612e291ec33b28f60b58191f8b2845eb237bc978efb4d339d0b09f285cda79c5d67eef4458d6cefbd592ac663c783d1a64ee";
     private static final long EXPIRATION = 600000;
 
-    public String generateToken(Long id,String userName, List<String> roles) {
+    public String generateToken(String userName, List<String> roles) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", roles);
-        claims.put("id",id);
         return createToken(claims, userName);
     }
 

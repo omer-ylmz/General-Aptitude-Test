@@ -1,12 +1,11 @@
 package com.gyt.managementservice.mapper;
 
-import com.gyt.managementservice.business.dtos.requests.request.RegisterRequest;
-import com.gyt.managementservice.business.dtos.requests.request.update.UpdatedUserRequest;
-import com.gyt.managementservice.business.dtos.requests.response.get.GetAllUserResponse;
-import com.gyt.managementservice.business.dtos.requests.response.get.GetUserResponse;
-import com.gyt.managementservice.business.dtos.requests.response.update.UpdatedUserResponse;
+import com.gyt.managementservice.business.dtos.request.RegisterRequest;
+import com.gyt.managementservice.business.dtos.request.update.UpdatedUserRequest;
+import com.gyt.managementservice.business.dtos.response.get.GetAllUserResponse;
+import com.gyt.managementservice.business.dtos.response.get.GetUserResponse;
+import com.gyt.managementservice.business.dtos.response.update.UpdatedUserResponse;
 import com.gyt.managementservice.entities.concretes.User;
-import org.checkerframework.checker.units.qual.C;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

@@ -1,4 +1,4 @@
-package com.gyt.managementservice.business.dtos.requests.response.get;
+package com.gyt.managementservice.business.dtos.response.get;
 
 import com.gyt.managementservice.entities.concretes.Role;
 import lombok.AllArgsConstructor;

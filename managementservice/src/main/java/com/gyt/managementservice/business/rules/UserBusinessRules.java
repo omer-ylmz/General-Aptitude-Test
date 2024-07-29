@@ -2,7 +2,7 @@ package com.gyt.managementservice.business.rules;
 
 import com.gyt.corepackage.business.abstracts.MessageService;
 import com.gyt.corepackage.utils.exceptions.types.BusinessException;
-import com.gyt.managementservice.business.dtos.requests.response.get.GetUserResponse;
+import com.gyt.managementservice.business.dtos.response.get.GetUserResponse;
 import com.gyt.managementservice.business.messages.Messages;
 import com.gyt.managementservice.dataAccess.abstracts.UserRepository;
 import com.gyt.managementservice.entities.concretes.User;

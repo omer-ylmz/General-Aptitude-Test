@@ -1,6 +1,6 @@
 package com.gyt.managementservice.mapper;
 
-import com.gyt.managementservice.business.dtos.requests.response.get.GetRoleResponse;
+import com.gyt.managementservice.business.dtos.response.get.GetRoleResponse;
 import com.gyt.managementservice.entities.concretes.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

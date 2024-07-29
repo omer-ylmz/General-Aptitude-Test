@@ -1,11 +1,11 @@
 package com.gyt.managementservice.api.controllers;
 
 import com.gyt.managementservice.business.abstracts.UserService;
-import com.gyt.managementservice.business.dtos.requests.request.RegisterRequest;
-import com.gyt.managementservice.business.dtos.requests.request.update.UpdatedUserRequest;
-import com.gyt.managementservice.business.dtos.requests.response.get.GetAllUserResponse;
-import com.gyt.managementservice.business.dtos.requests.response.get.GetUserResponse;
-import com.gyt.managementservice.business.dtos.requests.response.update.UpdatedUserResponse;
+import com.gyt.managementservice.business.dtos.request.RegisterRequest;
+import com.gyt.managementservice.business.dtos.request.update.UpdatedUserRequest;
+import com.gyt.managementservice.business.dtos.response.get.GetAllUserResponse;
+import com.gyt.managementservice.business.dtos.response.get.GetUserResponse;
+import com.gyt.managementservice.business.dtos.response.update.UpdatedUserResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

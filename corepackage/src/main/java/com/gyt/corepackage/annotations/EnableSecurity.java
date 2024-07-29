@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@ComponentScan(basePackages = {"com.gyt.authService"})
+@ComponentScan(basePackages = {"com.gyt.managementservice"})
 public @interface EnableSecurity { }

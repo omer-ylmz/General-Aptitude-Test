@@ -1,7 +1,7 @@
 package com.gyt.managementservice.business.concretes;
 
 import com.gyt.managementservice.business.abstracts.RoleService;
-import com.gyt.managementservice.business.dtos.requests.response.get.GetRoleResponse;
+import com.gyt.managementservice.business.dtos.response.get.GetRoleResponse;
 import com.gyt.managementservice.business.rules.RoleBusinessRules;
 import com.gyt.managementservice.dataAccess.abstracts.RoleRepository;
 import com.gyt.managementservice.entities.concretes.Role;

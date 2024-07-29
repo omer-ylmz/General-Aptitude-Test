@@ -1,4 +1,4 @@
-package com.gyt.managementservice.business.dtos.requests.response.get;
+package com.gyt.managementservice.business.dtos.response.get;
 
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;

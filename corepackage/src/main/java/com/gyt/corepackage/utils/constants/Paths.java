@@ -7,6 +7,10 @@ public class Paths {
         public static final String ServiceBasePackage = "com.gyt.managementservice";
     }
 
+    public static class Question {
+        public static final String ServiceBasePackage = "com.gyt.questionservice";
+    }
+
 
 
 
