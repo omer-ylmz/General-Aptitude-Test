@@ -2,7 +2,7 @@ package com.gyt.managementservice.business.rules;
 
 import com.gyt.corepackage.business.abstracts.MessageService;
 import com.gyt.corepackage.utils.exceptions.types.BusinessException;
-import com.gyt.managementservice.business.dtos.requests.request.LoginRequest;
+import com.gyt.managementservice.business.dtos.request.LoginRequest;
 import com.gyt.managementservice.business.messages.Messages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

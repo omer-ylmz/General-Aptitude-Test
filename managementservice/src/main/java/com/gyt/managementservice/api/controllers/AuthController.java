@@ -2,7 +2,7 @@ package com.gyt.managementservice.api.controllers;
 
 
 import com.gyt.managementservice.business.abstracts.AuthService;
-import com.gyt.managementservice.business.dtos.requests.request.LoginRequest;
+import com.gyt.managementservice.business.dtos.request.LoginRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
