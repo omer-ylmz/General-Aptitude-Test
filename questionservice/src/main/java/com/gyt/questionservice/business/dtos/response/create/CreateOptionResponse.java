@@ -11,5 +11,6 @@ public class CreateOptionResponse {
     private Long id; // Veritabanı tarafından atanmış ID
     private String text;
     private Boolean isCorrect;
+    private String imageUrl;
     private Long questionId; // İlişkilendirilen soru ID'si
 }

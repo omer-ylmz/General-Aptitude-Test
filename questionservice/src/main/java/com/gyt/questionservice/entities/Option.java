@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,6 +25,6 @@ public class Option extends BaseEntity {
     private Question question;
 
     @Column
-    private String image;
+    private String imageUrl;
 
 }

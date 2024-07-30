@@ -51,6 +51,7 @@ public class UserManager implements UserService {
         return byEmail.get();
     }
 
+    // TODO: 30.07.2024 mail adresi unique olmalı, iş kuralı ile kontrol edilecek
     @Override
     public void addOrganization(RegisterRequest request) {
         log.info("Adding new organization with email: {}", request.getEmail());

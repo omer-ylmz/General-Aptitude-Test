@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class CreateOptionRequest {
     private String text;
     private Boolean isCorrect;
+    private String imageUrl;
     private Long questionId;
 }
