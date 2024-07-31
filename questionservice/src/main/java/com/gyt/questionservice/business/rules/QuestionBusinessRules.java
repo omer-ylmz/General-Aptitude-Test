@@ -41,7 +41,7 @@ public class QuestionBusinessRules {
     }
 
     public void textAndImageValidationRule(String text, String image) {
-        if ((text == null || text.isBlank()) && (image == null || image.isBlank())) {
+        if ((text.isEmpty() || text.isBlank()) && (image.isEmpty() || image.isBlank())) {
             throw new BusinessException(messageService.getMessage(Messages.QuestionErrors.TextOrImageUrlError));
         }
     }

@@ -23,4 +23,6 @@ public interface QuestionMapper {
     GetQuestionResponse getQuestionToResponse(Question question);
 
     GetAllQuestionResponse getAllQuestionToResponse(Question question);
+
+    Question getResponseToQuestion(GetQuestionResponse getQuestionResponse);
 }
