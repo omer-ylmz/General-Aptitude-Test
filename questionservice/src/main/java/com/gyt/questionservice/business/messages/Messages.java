@@ -12,6 +12,10 @@ public class Messages {
         public static final String CorrectAnswerNotFoundError = "correctAnswerNotFoundError";
         public static final String OptionsShouldBeExist  = "optionsShouldBeExist";
         public static final String TextOrImageUrlError = "textOrImageUrlError";
+        public static final String AtLeastOneCorrectOptionRule = "atLeastOneCorrectOptionRule";
 
     }
 }
+
+
+// TODO: 1.08.2024 türkçe karakter izni bakılacak

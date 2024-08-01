@@ -2,6 +2,7 @@ package com.gyt.questionservice.entities;
 
 import com.gyt.corepackage.entities.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.List;
@@ -25,6 +26,6 @@ public class Question extends BaseEntity {
     private List<Option> options;
 
     @Column
-    private String imageUrl; // Soru için görsel URL'si
+    private String imageUrl;
 
 }

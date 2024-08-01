@@ -12,5 +12,5 @@ public class CreateOptionResponse {
     private String text;
     private Boolean isCorrect;
     private String imageUrl;
-    private Long questionId;
+
 }

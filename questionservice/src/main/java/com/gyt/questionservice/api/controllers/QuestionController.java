@@ -7,6 +7,7 @@ import com.gyt.questionservice.business.dtos.response.create.CreateQuestionRespo
 import com.gyt.questionservice.business.dtos.response.get.GetQuestionResponse;
 import com.gyt.questionservice.business.dtos.response.getAll.GetAllQuestionResponse;
 import com.gyt.questionservice.business.dtos.response.update.UpdateQuestionResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,7 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @PostMapping("/create")
-    public ResponseEntity<CreateQuestionResponse> createQuestion(@RequestBody CreateQuestionRequest createQuestionRequest) {
+    public ResponseEntity<CreateQuestionResponse> createQuestion(@RequestBody @Valid CreateQuestionRequest createQuestionRequest) {
         return new ResponseEntity<>(questionService.createQuestion(createQuestionRequest), HttpStatus.CREATED);
     }
 

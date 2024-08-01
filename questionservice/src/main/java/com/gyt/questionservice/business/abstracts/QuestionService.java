@@ -14,4 +14,5 @@ public interface QuestionService {
     GetQuestionResponse getQuestionByID(Long id);
     Page<GetAllQuestionResponse> getAllQuestion (int page,int size);
     void deleteQuestionByID(Long id);
+
 }

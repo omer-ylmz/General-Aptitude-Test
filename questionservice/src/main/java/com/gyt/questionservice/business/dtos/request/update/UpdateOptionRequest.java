@@ -12,5 +12,4 @@ public class UpdateOptionRequest {
     private String text;
     private Boolean isCorrect;
     private String imageUrl;
-    private Long questionId;
 }

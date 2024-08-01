@@ -7,6 +7,7 @@ import com.gyt.questionservice.business.dtos.response.create.CreateOptionRespons
 import com.gyt.questionservice.business.dtos.response.get.GetOptionResponse;
 import com.gyt.questionservice.business.dtos.response.getAll.GetAllOptionResponse;
 import com.gyt.questionservice.business.dtos.response.update.UpdateOptionResponse;
+import com.gyt.questionservice.entities.Option;
 import org.springframework.data.domain.Page;
 
 public interface OptionService {
@@ -15,5 +16,7 @@ public interface OptionService {
     GetOptionResponse getOptionByID(Long optionId);
     Page<GetAllOptionResponse> getAllOptions(int page, int size);
     void deleteOption(Long optionId);
+    Option getOption(Long id);
+    void saveOption(Option option);
 
 }
