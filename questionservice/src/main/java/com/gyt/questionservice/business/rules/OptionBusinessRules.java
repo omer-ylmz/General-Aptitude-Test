@@ -3,7 +3,6 @@ package com.gyt.questionservice.business.rules;
 import com.gyt.corepackage.business.abstracts.MessageService;
 import com.gyt.corepackage.utils.exceptions.types.BusinessException;
 import com.gyt.questionservice.api.clients.ManagementServiceClient;
-import com.gyt.questionservice.business.abstracts.QuestionService;
 import com.gyt.questionservice.business.dtos.request.create.CreateOptionRequest;
 import com.gyt.questionservice.business.dtos.request.update.UpdateOptionRequest;
 import com.gyt.questionservice.business.dtos.response.get.GetUserResponse;
@@ -14,7 +13,7 @@ import com.gyt.questionservice.entities.Option;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 

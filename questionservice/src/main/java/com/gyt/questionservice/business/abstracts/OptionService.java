@@ -11,12 +11,10 @@ import com.gyt.questionservice.entities.Option;
 import org.springframework.data.domain.Page;
 
 public interface OptionService {
-    CreateOptionResponse createOption(CreateOptionRequest request);
     UpdateOptionResponse updateOption(UpdateOptionRequest request);
     GetOptionResponse getOptionByID(Long optionId);
     Page<GetAllOptionResponse> getAllOptions(int page, int size);
     void deleteOption(Long optionId);
-    Option getOption(Long id);
     void saveOption(Option option);
 
 }

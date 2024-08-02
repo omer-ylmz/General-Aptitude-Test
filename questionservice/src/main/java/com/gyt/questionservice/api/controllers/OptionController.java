@@ -20,10 +20,6 @@ public class OptionController {
 
     private final OptionService optionService;
 
-    @PostMapping("/createoption")
-    public ResponseEntity<CreateOptionResponse> createOption(@RequestBody CreateOptionRequest request){
-        return new  ResponseEntity<>(optionService.createOption(request), HttpStatus.CREATED);
-    }
 
     @PutMapping("/updateoption")
     public ResponseEntity<UpdateOptionResponse> updateOption(@RequestBody UpdateOptionRequest request){
