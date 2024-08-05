@@ -13,6 +13,7 @@ public class Messages {
         public static final String OptionsShouldBeExist  = "optionsShouldBeExist";
         public static final String TextOrImageUrlError = "textOrImageUrlError";
         public static final String AtLeastOneCorrectOptionRule = "atLeastOneCorrectOptionRule";
+        public static final String AtLeastTwoAnswerCheckErrors = "atLeastTwoAnswerCheckErrors";
 
     }
 }

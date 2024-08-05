@@ -21,6 +21,7 @@ import com.gyt.questionservice.entities.Question;
 import com.gyt.questionservice.mapper.OptionMapper;
 import com.gyt.questionservice.mapper.QuestionMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +31,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class QuestionManager implements QuestionService {
@@ -42,6 +43,8 @@ public class QuestionManager implements QuestionService {
 
     @Override
     public CreateQuestionResponse createQuestion(CreateQuestionRequest request) {
+        log.info("Create request received for question with text: {}", request.getText());
+
         questionBusinessRules.textAndImageValidationRule(request.getText(), request.getImageUrl());
         optionBusinessRules.correctOptionCheck(request.getOptionRequestList());
 
@@ -69,11 +72,14 @@ public class QuestionManager implements QuestionService {
         CreateQuestionResponse questionToResponse = QuestionMapper.INSTANCE.createQuestionToResponse(question);
         questionToResponse.setOptionList(options);
 
+        log.info("Question with text: {} created successfully", request.getText());
         return questionToResponse;
     }
 
     @Override
     public UpdateQuestionResponse updateQuestion(UpdateQuestionRequest request) {
+        log.info("Update request received for question with ID: {}", request.getId());
+
         questionBusinessRules.questionShouldBeExist(request.getId());
         questionBusinessRules.textAndImageValidationRule(request.getText(), request.getImageUrl());
 
@@ -85,11 +91,15 @@ public class QuestionManager implements QuestionService {
         question.setCreatorId(foundQuestion.getCreatorId());
         questionRepository.save(question);
 
+        log.info("Question with ID: {} updated successfully", request.getId());
+
         return QuestionMapper.INSTANCE.updateQuestionToResponse(question);
     }
 
     @Override
     public GetQuestionResponse getQuestionByID(Long id) {
+        log.info("Get request received for question with ID: {}", id);
+
         questionBusinessRules.questionShouldBeExist(id);
 
         Question question = questionRepository.findById(id).orElseThrow();
@@ -98,14 +108,19 @@ public class QuestionManager implements QuestionService {
 
         GetQuestionResponse response = QuestionMapper.INSTANCE.getQuestionToResponse(question);
         response.setOptions(optionDTOS);
+
+        log.info("Question with ID: {} get successfully", id);
+
         return response;
     }
 
     @Override
     public Page<GetAllQuestionResponse> getAllQuestion(int page, int size) {
+        log.info("Get all questions request received for page: {}, size: {}", page, size);
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
         Page<Question> questionsPage = questionRepository.findAll(pageable);
-        return questionsPage.map(
+        Page<GetAllQuestionResponse> responsePage = questionsPage.map(
                 question -> {
                     List<OptionDTO> optionDTOS = question.getOptions().stream().map(OptionMapper.INSTANCE::optionToDTO).toList();
                     GetAllQuestionResponse response = QuestionMapper.INSTANCE.getAllQuestionToResponse(question);
@@ -113,10 +128,15 @@ public class QuestionManager implements QuestionService {
                     return response;
                 }
         );
+        log.info("Retrieved {} questions for page: {}, size: {}", responsePage.getTotalElements(), page, size);
+
+        return responsePage;
     }
 
     @Override
     public void deleteQuestionByID(Long id) {
+        log.info("Delete request received for question with ID: {}", id);
+
         questionBusinessRules.questionShouldBeExist(id);
 
         Question foundQuestion = questionRepository.findById(id).orElseThrow();
@@ -124,7 +144,34 @@ public class QuestionManager implements QuestionService {
         questionBusinessRules.userAuthorizationCheck(foundQuestion.getCreatorId());
 
         questionRepository.deleteById(id);
+
+        log.info("Question with ID: {} deleted successfully", id);
     }
+
+    @Override
+    public CreateOptionResponse addOptionToQuestion(Long questionId, CreateOptionRequest request) {
+        log.info("Add option request received for question with ID: {}", questionId);
+
+        questionBusinessRules.questionShouldBeExist(questionId);
+
+        Question question = questionRepository.findById(questionId).orElseThrow();
+
+        optionBusinessRules.upToFiveAnswerChecks(question.getOptions().size());
+        optionBusinessRules.textAndImageValidationRule(request.getText(), request.getImageUrl());
+
+        Option option = OptionMapper.INSTANCE.createRequestToOption(request);
+        option.setQuestion(question);
+
+        optionService.saveOption(option);
+
+        question.getOptions().add(option);
+        questionRepository.save(question);
+
+        log.info("Option added to question with ID: {} successfully", questionId);
+
+        return OptionMapper.INSTANCE.createOptionToResponse(option);
+    }
+
 
     public Long questionAddControlByCreatorID(GetUserResponse getUserResponse) {
         boolean hasOrganizationRole = false;
@@ -136,8 +183,10 @@ public class QuestionManager implements QuestionService {
             }
         }
         if (hasOrganizationRole) {
+            log.info("User with ID: {} has organization role", getUserResponse.getId());
             return getUserResponse.getId();
         }
+        log.warn("User with ID: {} does have admin role", getUserResponse.getId());
         return null;
     }
 }

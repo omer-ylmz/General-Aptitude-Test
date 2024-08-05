@@ -2,10 +2,11 @@ package com.gyt.questionservice.entities;
 
 import com.gyt.corepackage.entities.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.List;
+
+@EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
