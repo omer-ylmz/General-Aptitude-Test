@@ -5,6 +5,7 @@ import com.gyt.questionservice.business.dtos.request.update.UpdateOptionRequest;
 import com.gyt.questionservice.business.dtos.response.get.GetOptionResponse;
 import com.gyt.questionservice.business.dtos.response.getAll.GetAllOptionResponse;
 import com.gyt.questionservice.business.dtos.response.update.UpdateOptionResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,7 +23,7 @@ public class OptionController {
 
 
     @PutMapping("/updateoption")
-    public ResponseEntity<UpdateOptionResponse> updateOption(@RequestBody UpdateOptionRequest request) {
+    public ResponseEntity<UpdateOptionResponse> updateOption(@RequestBody @Valid UpdateOptionRequest request) {
         log.info("Update request received for option with ID: {}", request.getId());
         UpdateOptionResponse response = optionService.updateOption(request);
         log.info("Option with ID: {} updated successfully", response.getId());

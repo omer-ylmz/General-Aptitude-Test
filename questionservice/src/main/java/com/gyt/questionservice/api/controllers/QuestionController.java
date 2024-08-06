@@ -27,14 +27,14 @@ public class QuestionController {
 
     @PostMapping("/create")
     public ResponseEntity<CreateQuestionResponse> createQuestion(@RequestBody @Valid CreateQuestionRequest createQuestionRequest) {
-        log.info("Create request received for question: {} {}", createQuestionRequest.getText(),createQuestionRequest.getImageUrl());
+        log.info("Create request received for question: {} {}", createQuestionRequest.getText(), createQuestionRequest.getImageUrl());
         CreateQuestionResponse response = questionService.createQuestion(createQuestionRequest);
         log.info("Question created successfully with ID: {}", response.getId());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/update")
-    public ResponseEntity<UpdateQuestionResponse> updateQuestion(@RequestBody UpdateQuestionRequest updateQuestionRequest) {
+    public ResponseEntity<UpdateQuestionResponse> updateQuestion(@RequestBody @Valid UpdateQuestionRequest updateQuestionRequest) {
         log.info("Update request received for question with ID: {}", updateQuestionRequest.getId());
         UpdateQuestionResponse response = questionService.updateQuestion(updateQuestionRequest);
         log.info("Question with ID: {} updated successfully", response.getId());

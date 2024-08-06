@@ -14,7 +14,7 @@ import lombok.ToString;
 @Table(name = "options")
 public class Option extends BaseEntity {
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false)
     private String text;
 
     @Column(nullable = false)
