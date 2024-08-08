@@ -20,7 +20,7 @@ public class Option extends BaseEntity {
     @Column(nullable = false)
     private Boolean isCorrect;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "question_id")
     private Question question;
 

@@ -10,4 +10,5 @@ public enum Status {
     IN_PROGRESS(2), // Başladı
     FINISHED(3); // Bitti
     private final int value;
+
 }

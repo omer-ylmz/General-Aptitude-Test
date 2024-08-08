@@ -23,7 +23,7 @@ public class Question extends BaseEntity {
     @Column(nullable = false)
     private Boolean isEditable = true;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "question")
+    @OneToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL, mappedBy = "question")
     private List<Option> options;
 
     @Column

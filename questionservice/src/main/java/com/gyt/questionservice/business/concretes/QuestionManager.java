@@ -1,5 +1,8 @@
 package com.gyt.questionservice.business.concretes;
 
+import com.gyt.corepackage.events.question.CreatedQuestionEvent;
+import com.gyt.corepackage.events.question.DeletedQuestionEvent;
+import com.gyt.corepackage.events.question.UpdatedQuestionEvent;
 import com.gyt.questionservice.api.clients.ManagementServiceClient;
 import com.gyt.questionservice.business.abstracts.OptionService;
 import com.gyt.questionservice.business.abstracts.QuestionService;
@@ -18,6 +21,7 @@ import com.gyt.questionservice.business.rules.QuestionBusinessRules;
 import com.gyt.questionservice.dataAccess.abstacts.QuestionRepository;
 import com.gyt.questionservice.entities.Option;
 import com.gyt.questionservice.entities.Question;
+import com.gyt.questionservice.kafka.producer.QuestionProducer;
 import com.gyt.questionservice.mapper.OptionMapper;
 import com.gyt.questionservice.mapper.QuestionMapper;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +44,8 @@ public class QuestionManager implements QuestionService {
     private final QuestionBusinessRules questionBusinessRules;
     private final OptionBusinessRules optionBusinessRules;
     private final OptionService optionService;
+    private final QuestionProducer questionProducer;
+    private final QuestionMapper questionMapper;
 
     @Override
     public CreateQuestionResponse createQuestion(CreateQuestionRequest request) {
@@ -48,7 +54,7 @@ public class QuestionManager implements QuestionService {
         questionBusinessRules.textAndImageValidationRule(request.getText(), request.getImageUrl());
         optionBusinessRules.correctOptionCheck(request.getOptionRequestList());
 
-        Question question = QuestionMapper.INSTANCE.createRequestToQuestion(request);
+        Question question = questionMapper.createRequestToQuestion(request);
 
         GetUserResponse authenticatedUser = managementServiceClient.getAuthenticatedUser();
         Long creatorId = questionAddControlByCreatorID(authenticatedUser);
@@ -69,8 +75,9 @@ public class QuestionManager implements QuestionService {
             options.add(OptionMapper.INSTANCE.createOptionToResponse(option));
         }
 
-        CreateQuestionResponse questionToResponse = QuestionMapper.INSTANCE.createQuestionToResponse(question);
+        CreateQuestionResponse questionToResponse = questionMapper.createQuestionToResponse(question);
         questionToResponse.setOptionList(options);
+        sendCreatedQuestionToSearchService(question);
 
         log.info("Question with text: {} created successfully", request.getText());
         return questionToResponse;
@@ -87,13 +94,15 @@ public class QuestionManager implements QuestionService {
 
         questionBusinessRules.userAuthorizationCheck(foundQuestion.getCreatorId());
 
-        Question question = QuestionMapper.INSTANCE.updateRequestToQuestion(request);
+        Question question = questionMapper.updateRequestToQuestion(request);
         question.setCreatorId(foundQuestion.getCreatorId());
         questionRepository.save(question);
 
+        sendUpdatedQuestionToSearchService(question);
+
         log.info("Question with ID: {} updated successfully", request.getId());
 
-        return QuestionMapper.INSTANCE.updateQuestionToResponse(question);
+        return questionMapper.updateQuestionToResponse(question);
     }
 
     @Override
@@ -106,7 +115,7 @@ public class QuestionManager implements QuestionService {
         List<OptionDTO> optionDTOS = question.getOptions().stream()
                 .map(OptionMapper.INSTANCE::optionToDTO).toList();
 
-        GetQuestionResponse response = QuestionMapper.INSTANCE.getQuestionToResponse(question);
+        GetQuestionResponse response = questionMapper.getQuestionToResponse(question);
         response.setOptions(optionDTOS);
 
         log.info("Question with ID: {} get successfully", id);
@@ -123,7 +132,7 @@ public class QuestionManager implements QuestionService {
         Page<GetAllQuestionResponse> responsePage = questionsPage.map(
                 question -> {
                     List<OptionDTO> optionDTOS = question.getOptions().stream().map(OptionMapper.INSTANCE::optionToDTO).toList();
-                    GetAllQuestionResponse response = QuestionMapper.INSTANCE.getAllQuestionToResponse(question);
+                    GetAllQuestionResponse response = questionMapper.getAllQuestionToResponse(question);
                     response.setOptions(optionDTOS);
                     return response;
                 }
@@ -144,6 +153,8 @@ public class QuestionManager implements QuestionService {
         questionBusinessRules.userAuthorizationCheck(foundQuestion.getCreatorId());
 
         questionRepository.deleteById(id);
+
+        sendDeletedQuestionToSearchService(foundQuestion);
 
         log.info("Question with ID: {} deleted successfully", id);
     }
@@ -188,5 +199,20 @@ public class QuestionManager implements QuestionService {
         }
         log.warn("User with ID: {} does have admin role", getUserResponse.getId());
         return null;
+    }
+
+    private void sendCreatedQuestionToSearchService(Question question) {
+        CreatedQuestionEvent createdQuestionEvent = questionMapper.questionToCreatedQuestionEvent(question);
+        questionProducer.sendQuestionForCreate(createdQuestionEvent);
+    }
+
+    private void sendUpdatedQuestionToSearchService(Question question) {
+        UpdatedQuestionEvent updatedQuestionEvent = questionMapper.questionToUpdatedQuestionEvent(question);
+        questionProducer.sendQuestionForUpdate(updatedQuestionEvent);
+    }
+
+    private void sendDeletedQuestionToSearchService(Question question) {
+        DeletedQuestionEvent deletedQuestionEvent = questionMapper.questionToDeletedQuestionEvent(question);
+        questionProducer.sendQuestionForDelete(deletedQuestionEvent);
     }
 }

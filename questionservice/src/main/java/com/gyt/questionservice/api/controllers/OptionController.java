@@ -27,7 +27,7 @@ public class OptionController {
         log.info("Update request received for option with ID: {}", request.getId());
         UpdateOptionResponse response = optionService.updateOption(request);
         log.info("Option with ID: {} updated successfully", response.getId());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/getoption/{id}")

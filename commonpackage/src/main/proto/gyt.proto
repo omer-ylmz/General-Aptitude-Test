@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package com.gyt.questionservice;
+
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+
+message GrpcGetQuestionRequest {
+  int64 id = 1;
+}
+
+message GrpcGetQuestionResponse {
+  int64 id = 1;
+  string text = 2;
+  int64 creatorId = 3;
+  bool isEditable = 4;
+  string imageUrl = 5;
+  repeated GrpcOptionDTO options = 6;
+}
+
+message GrpcOptionDTO {
+  int64 id = 1;
+  string text = 2;
+  string imageUrl = 3;
+}
+
+service QuestionService {
+  rpc GetQuestionByID(GrpcGetQuestionRequest) returns (GrpcGetQuestionResponse);
+}

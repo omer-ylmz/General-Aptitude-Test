@@ -1,41 +1,61 @@
 package com.gyt.examservice.business.concretes;
 
+import com.gyt.corepackage.business.abstracts.MessageService;
+import com.gyt.corepackage.utils.exceptions.types.BusinessException;
 import com.gyt.examservice.api.clients.ManagementServiceClient;
-import com.gyt.examservice.api.clients.QuestionServiceClient;
 import com.gyt.examservice.business.abstracts.ExamService;
 import com.gyt.examservice.business.dtos.RuleDTO;
 import com.gyt.examservice.business.dtos.request.create.CreateExamRequest;
-
+import com.gyt.examservice.business.dtos.request.update.UpdateExamRequest;
 import com.gyt.examservice.business.dtos.response.create.CreateExamResponse;
+import com.gyt.examservice.business.dtos.response.get.GetExamResponse;
 import com.gyt.examservice.business.dtos.response.get.GetQuestionResponse;
 import com.gyt.examservice.business.dtos.response.get.GetUserResponse;
+import com.gyt.examservice.business.dtos.response.get.OptionDTO;
+import com.gyt.examservice.business.dtos.response.getAll.GetAllExamResponse;
+import com.gyt.examservice.business.dtos.response.update.UpdateExamResponse;
+import com.gyt.examservice.business.messages.Messages;
+import com.gyt.examservice.business.rules.ExamBusinessRules;
 import com.gyt.examservice.dataAccess.abstracts.ExamRepository;
 import com.gyt.examservice.entities.concretes.Exam;
 import com.gyt.examservice.entities.concretes.Rule;
 import com.gyt.examservice.mapper.ExamMapper;
 import com.gyt.examservice.mapper.RuleMapper;
+import com.gyt.questionservice.GrpcGetQuestionRequest;
+import com.gyt.questionservice.GrpcGetQuestionResponse;
+import com.gyt.questionservice.QuestionServiceGrpc;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 
 import java.util.ArrayList;
 import java.util.List;
+
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
 public class ExamManager implements ExamService {
     private final ExamRepository examRepository;
     private final ManagementServiceClient managementServiceClient;
-    private final QuestionServiceClient questionServiceClient;
+    private final QuestionServiceGrpc.QuestionServiceBlockingStub questionServiceBlockingStub;
     private final ExamMapper examMapper;
     private final RuleMapper ruleMapper;
+    private final ExamBusinessRules examBusinessRules;
+    private final MessageService messageService;
 
 
     @Override
     @Transactional
     public CreateExamResponse createExam(CreateExamRequest createExamRequest) {
-         GetUserResponse getUserResponse = managementServiceClient.getAuthenticatedUser();
+        //Todo grpcden giden istek de soru yoksa hata fırlatmalı
+        examBusinessRules.validateExamDates(createExamRequest.getStartDate(), createExamRequest.getEndDate());
+        examBusinessRules.validateUniqueQuestions(createExamRequest.getQuestionIds());
+
+        GetUserResponse getUserResponse = managementServiceClient.getAuthenticatedUser();
 
         Exam exam = examMapper.createRequestToExam(createExamRequest);
         exam.setOrganizationId(getUserResponse.getId());
@@ -53,18 +73,143 @@ public class ExamManager implements ExamService {
 
         examRepository.save(exam);
 
-        List<GetQuestionResponse> getQuestionResponses = new ArrayList<>();
-        for (long questionId : createExamRequest.getQuestionIds()) {
-             GetQuestionResponse response = questionServiceClient.getQuestionById(questionId);
-             getQuestionResponses.add(response);
-        }
 
         CreateExamResponse createExamResponse = examMapper.createExamToResponse(exam);
-        createExamResponse.setQuestions(getQuestionResponses);
+        createExamResponse.setQuestions(fetchAndMapQuestions(createExamRequest.getQuestionIds()));
         createExamResponse.setRules(createRuleResponses);
 
         return createExamResponse;
     }
 
+    @Override
+    @Transactional
+    public UpdateExamResponse updateExam(UpdateExamRequest updateExamRequest) {
+        examBusinessRules.validateExamDates(updateExamRequest.getStartDate(), updateExamRequest.getEndDate());
+        examBusinessRules.validateUniqueQuestions(updateExamRequest.getQuestionIds());
 
+
+        Exam existingExam = examRepository.findById(updateExamRequest.getId())
+                .orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+
+        examBusinessRules.checkIfExamCanBeModified(existingExam.getStatus());
+
+        GetUserResponse getUserResponse = managementServiceClient.getAuthenticatedUser();
+
+        examBusinessRules.userAuthorizationCheck(existingExam.getOrganizationId(), getUserResponse);
+
+        Exam exam = examMapper.updateRequestToExam(updateExamRequest);
+        exam.setRules(existingExam.getRules());
+        exam.setOrganizationId(exam.getOrganizationId());
+        examRepository.save(exam);
+
+        UpdateExamResponse updateExamResponse = examMapper.updateExamToResponse(existingExam);
+        updateExamResponse.setQuestions(fetchAndMapQuestions(updateExamRequest.getQuestionIds()));
+
+        return updateExamResponse;
+    }
+
+    public GetExamResponse getExamById(Long examId) {
+        Exam exam = examRepository.findById(examId)
+                .orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+
+        List<RuleDTO> ruleDTOs = exam.getRules().stream()
+                .map(ruleMapper::ruleToRuleDTO)
+                .collect(Collectors.toList());
+
+        List<GetQuestionResponse> questionResponses = fetchAndMapQuestions(exam.getQuestionIds());
+
+        GetExamResponse getExamResponse = examMapper.getExamToResponse(exam);
+        getExamResponse.setQuestions(questionResponses);
+        getExamResponse.setRules(ruleDTOs);
+
+        return getExamResponse;
+    }
+
+    @Override
+    public Page<GetAllExamResponse> getAllExam(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Exam> examPage = examRepository.findAll(pageable);
+
+        return examPage.map(exam -> {
+            GetAllExamResponse response = examMapper.getAllExamToResponse(exam);
+
+            List<GetQuestionResponse> questionResponses = fetchAndMapQuestions(exam.getQuestionIds());
+            response.setQuestions(questionResponses);
+
+            List<RuleDTO> ruleDTOs = exam.getRules().stream()
+                    .map(ruleMapper::ruleToRuleDTO)
+                    .collect(Collectors.toList());
+            response.setRules(ruleDTOs);
+
+            return response;
+        });
+    }
+
+    @Override
+    public void deleteExamById(Long id) {
+        Exam exam = examRepository.findById(id).orElseThrow(
+                () -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+
+        GetUserResponse authenticatedUser = managementServiceClient.getAuthenticatedUser();
+
+        examBusinessRules.userAuthorizationCheck(exam.getOrganizationId(), authenticatedUser);
+        examBusinessRules.checkIfExamCanBeModified(exam.getStatus());
+
+        examRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void addQuestionToExam(Long examId, Long questionId) {
+        Exam exam = examRepository.findById(examId).orElseThrow(
+                () -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+
+        GetUserResponse authenticatedUser = managementServiceClient.getAuthenticatedUser();
+
+        examBusinessRules.userAuthorizationCheck(exam.getOrganizationId(), authenticatedUser);
+        examBusinessRules.checkIfExamCanBeModified(exam.getStatus());
+        //todo soru daha önce var mı kontrol et
+
+        exam.getQuestionIds().add(questionId);
+        examRepository.save(exam);
+
+
+    }
+
+    @Override
+    public void removeQuestionFromExam(Long examId, Long questionId) {
+        Exam exam = examRepository.findById(examId).orElseThrow(
+                () -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+
+        GetUserResponse authenticatedUser = managementServiceClient.getAuthenticatedUser();
+
+        examBusinessRules.userAuthorizationCheck(exam.getOrganizationId(), authenticatedUser);
+        examBusinessRules.checkIfExamCanBeModified(exam.getStatus());
+        examBusinessRules.checkIfQuestionExistsInExam(exam.getQuestionIds(), questionId);
+
+        //todo son soruda hata ver
+
+        exam.getQuestionIds().remove(questionId);
+        examRepository.save(exam);
+
+    }
+
+
+    private List<GetQuestionResponse> fetchAndMapQuestions(List<Long> questionIds) {
+        List<GetQuestionResponse> getQuestionResponses = new ArrayList<>();
+        for (long questionId : questionIds) {
+            GrpcGetQuestionRequest request = GrpcGetQuestionRequest.newBuilder().setId(questionId).build();
+            GrpcGetQuestionResponse response = questionServiceBlockingStub.getQuestionByID(request);
+
+            GetQuestionResponse getQuestionResponse = examMapper.grpcGetQuestionResponseToResponse(response);
+
+            List<OptionDTO> optionDTOs = response.getOptionsList().stream()
+                    .map(option -> new OptionDTO(option.getId(), option.getText(), option.getImageUrl()))
+                    .collect(Collectors.toList());
+
+            getQuestionResponse.setOptions(optionDTOs);
+            getQuestionResponses.add(getQuestionResponse);
+        }
+        return getQuestionResponses;
+    }
 }

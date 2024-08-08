@@ -1,5 +1,8 @@
 package com.gyt.questionservice.mapper;
 
+import com.gyt.corepackage.events.question.CreatedQuestionEvent;
+import com.gyt.corepackage.events.question.DeletedQuestionEvent;
+import com.gyt.corepackage.events.question.UpdatedQuestionEvent;
 import com.gyt.questionservice.business.dtos.request.create.CreateQuestionRequest;
 import com.gyt.questionservice.business.dtos.request.update.UpdateQuestionRequest;
 import com.gyt.questionservice.business.dtos.response.create.CreateQuestionResponse;
@@ -12,7 +15,7 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface QuestionMapper {
-    QuestionMapper INSTANCE = Mappers.getMapper(QuestionMapper.class);
+
 
     Question createRequestToQuestion(CreateQuestionRequest createQuestionRequest);
     CreateQuestionResponse createQuestionToResponse(Question question);
@@ -25,4 +28,10 @@ public interface QuestionMapper {
     GetAllQuestionResponse getAllQuestionToResponse(Question question);
 
     Question getResponseToQuestion(GetQuestionResponse getQuestionResponse);
+
+    CreatedQuestionEvent questionToCreatedQuestionEvent(Question question);
+
+    UpdatedQuestionEvent questionToUpdatedQuestionEvent(Question question);
+
+    DeletedQuestionEvent questionToDeletedQuestionEvent(Question question);
 }
