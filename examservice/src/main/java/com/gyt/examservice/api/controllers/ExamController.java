@@ -1,6 +1,5 @@
 package com.gyt.examservice.api.controllers;
 
-
 import com.gyt.examservice.business.abstracts.ExamService;
 import com.gyt.examservice.business.dtos.request.create.CreateExamRequest;
 import com.gyt.examservice.business.dtos.request.update.UpdateExamRequest;
@@ -14,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/v1/exam")
@@ -63,5 +64,11 @@ public class ExamController {
     @ResponseStatus(HttpStatus.OK)
     public void removeQuestionFromExam(@RequestParam Long examId , Long questionId){
         examService.removeQuestionFromExam(examId,questionId);
+    }
+
+    @PostMapping("/extendExamEndDate")
+    @ResponseStatus(HttpStatus.OK)
+    public void extendExamEndDate(@RequestParam Long examId , LocalDateTime newEndDate){
+        examService.extendExamEndDate(examId,newEndDate);
     }
 }

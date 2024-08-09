@@ -6,6 +6,7 @@ import com.gyt.examservice.api.clients.ManagementServiceClient;
 import com.gyt.examservice.business.dtos.response.get.GetUserResponse;
 import com.gyt.examservice.business.messages.Messages;
 import com.gyt.examservice.dataAccess.abstracts.ExamRepository;
+import com.gyt.examservice.entities.concretes.Exam;
 import com.gyt.examservice.entities.enums.Status;
 import com.gyt.questionservice.GrpcGetQuestionResponse;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +66,24 @@ public class ExamBusinessRules {
     public void checkIfQuestionExistsInExam(List<Long> questionIds,Long id) {
         if (!questionIds.contains(id)) {
             throw new BusinessException(messageService.getMessage(Messages.ExamErrors.QuestionNotFoundInExam));
+        }
+    }
+
+    public void checkIfQuestionAlreadyExistsInExam(Exam exam, Long questionId){
+        if(exam.getQuestionIds().contains(questionId)){
+            throw new BusinessException(messageService.getMessage(Messages.ExamErrors.QuestionAlreadyExistsInExam));
+        }
+    }
+
+    public void checkIfLastQuestionInExam(Exam exam){
+        if (exam.getQuestionIds().size() == 1) {
+            throw new BusinessException(messageService.getMessage(Messages.ExamErrors.LastQuestionCanNotBeRemoved));
+        }
+    }
+
+    public void checkIfExamIsInProgress(Status status) {
+        if (status != Status.IN_PROGRESS) {
+            throw new BusinessException(messageService.getMessage(Messages.ExamErrors.InvalidExamStatusForExtension));
         }
     }
 }

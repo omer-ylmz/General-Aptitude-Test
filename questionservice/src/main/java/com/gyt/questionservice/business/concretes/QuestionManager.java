@@ -8,6 +8,7 @@ import com.gyt.questionservice.business.abstracts.OptionService;
 import com.gyt.questionservice.business.abstracts.QuestionService;
 import com.gyt.questionservice.business.dtos.request.create.CreateOptionRequest;
 import com.gyt.questionservice.business.dtos.request.create.CreateQuestionRequest;
+import com.gyt.questionservice.business.dtos.request.update.UpdateQuestionEditableRequest;
 import com.gyt.questionservice.business.dtos.request.update.UpdateQuestionRequest;
 import com.gyt.questionservice.business.dtos.response.create.CreateOptionResponse;
 import com.gyt.questionservice.business.dtos.response.create.CreateQuestionResponse;
@@ -181,6 +182,15 @@ public class QuestionManager implements QuestionService {
         log.info("Option added to question with ID: {} successfully", questionId);
 
         return OptionMapper.INSTANCE.createOptionToResponse(option);
+    }
+
+    @Override
+    public void updateQuestionsEditableStatus(UpdateQuestionEditableRequest request) {
+        List<Question> questions = questionRepository.findAllById(request.getQuestionIds());
+        for (Question question : questions) {
+            question.setIsEditable(request.isEditable());
+        }
+        questionRepository.saveAll(questions);
     }
 
 

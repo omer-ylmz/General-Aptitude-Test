@@ -9,5 +9,12 @@ public class Messages {
         public static final String UserAuthorityError = "userAuthorityError";
         public static final String ExamCannotBeModifiedBecauseItHasStarted = "examCannotBeModifiedBecauseItHasStarted";
         public static final String QuestionNotFoundInExam = "questionNotFoundInExam";
+        public static final String QuestionAlreadyExistsInExam = "questionAlreadyExistsInExam";
+        public static final String LastQuestionCanNotBeRemoved = "lastQuestionCanNotBeRemoved";
+        public static final String InvalidExamStatusForExtension = "invalidExamStatusForExtension";
+    }
+
+    public static class RuleErrors{
+        public static final String RuleShouldBeExist = "ruleShouldBeExist";
     }
 }

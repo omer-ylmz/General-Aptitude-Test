@@ -3,6 +3,7 @@ package com.gyt.examservice.business.concretes;
 import com.gyt.corepackage.business.abstracts.MessageService;
 import com.gyt.corepackage.utils.exceptions.types.BusinessException;
 import com.gyt.examservice.api.clients.ManagementServiceClient;
+import com.gyt.examservice.api.clients.QuestionServiceClient;
 import com.gyt.examservice.business.abstracts.ExamService;
 import com.gyt.examservice.business.dtos.RuleDTO;
 import com.gyt.examservice.business.dtos.request.create.CreateExamRequest;
@@ -19,6 +20,7 @@ import com.gyt.examservice.business.rules.ExamBusinessRules;
 import com.gyt.examservice.dataAccess.abstracts.ExamRepository;
 import com.gyt.examservice.entities.concretes.Exam;
 import com.gyt.examservice.entities.concretes.Rule;
+import com.gyt.examservice.entities.enums.Status;
 import com.gyt.examservice.mapper.ExamMapper;
 import com.gyt.examservice.mapper.RuleMapper;
 import com.gyt.questionservice.GrpcGetQuestionRequest;
@@ -29,8 +31,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +51,7 @@ public class ExamManager implements ExamService {
     private final RuleMapper ruleMapper;
     private final ExamBusinessRules examBusinessRules;
     private final MessageService messageService;
+    private final QuestionServiceClient questionServiceClient;
 
 
     @Override
@@ -127,7 +133,7 @@ public class ExamManager implements ExamService {
 
     @Override
     public Page<GetAllExamResponse> getAllExam(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
         Page<Exam> examPage = examRepository.findAll(pageable);
 
         return examPage.map(exam -> {
@@ -168,7 +174,7 @@ public class ExamManager implements ExamService {
 
         examBusinessRules.userAuthorizationCheck(exam.getOrganizationId(), authenticatedUser);
         examBusinessRules.checkIfExamCanBeModified(exam.getStatus());
-        //todo soru daha önce var mı kontrol et
+        examBusinessRules.checkIfQuestionAlreadyExistsInExam(exam, questionId);
 
         exam.getQuestionIds().add(questionId);
         examRepository.save(exam);
@@ -186,13 +192,54 @@ public class ExamManager implements ExamService {
         examBusinessRules.userAuthorizationCheck(exam.getOrganizationId(), authenticatedUser);
         examBusinessRules.checkIfExamCanBeModified(exam.getStatus());
         examBusinessRules.checkIfQuestionExistsInExam(exam.getQuestionIds(), questionId);
-
-        //todo son soruda hata ver
+        examBusinessRules.checkIfLastQuestionInExam(exam);
 
         exam.getQuestionIds().remove(questionId);
         examRepository.save(exam);
 
     }
+
+    @Override
+    public void extendExamEndDate(Long examId, LocalDateTime newEndDate) {
+        Exam exam = examRepository.findById(examId).orElseThrow(
+                () -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+
+        GetUserResponse authenticatedUser = managementServiceClient.getAuthenticatedUser();
+
+        examBusinessRules.userAuthorizationCheck(exam.getOrganizationId(), authenticatedUser);
+        examBusinessRules.checkIfExamIsInProgress(exam.getStatus());
+
+        exam.setEndDate(newEndDate);
+        examRepository.save(exam);
+    }
+
+//    @Override
+//    public void markQuestionsAsNotEditable(Long examId) {
+//        Exam exam = examRepository.findById(examId)
+//                .orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+//
+//        if (exam.getStatus() == Status.IN_PROGRESS) {
+//            questionServiceClient.updateQuestionsEditableStatus(exam.getQuestionIds(), false);
+//        }
+//    }
+
+//    @Override
+//    public void markQuestionsAsEditableIfNoOtherActiveExams(Long examId) {
+//        Exam exam = examRepository.findById(examId)
+//                .orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+//
+//        if (exam.getStatus() == Status.FINISHED) {
+//            List<Long> questionIds = exam.getQuestionIds();
+//            boolean existsInAnotherActiveExam = examRepository.existsInAnotherInProgressExamWithQuestions(questionIds);
+//
+//            if (!existsInAnotherActiveExam) {
+//                questionServiceClient.updateQuestionsEditableStatus(questionIds, true);
+//            }
+//        }
+//    }
+
+
+
 
 
     private List<GetQuestionResponse> fetchAndMapQuestions(List<Long> questionIds) {

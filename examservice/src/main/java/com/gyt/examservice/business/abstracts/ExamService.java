@@ -8,6 +8,9 @@ import com.gyt.examservice.business.dtos.response.getAll.GetAllExamResponse;
 import com.gyt.examservice.business.dtos.response.update.UpdateExamResponse;
 import org.springframework.data.domain.Page;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 public interface ExamService {
     CreateExamResponse createExam(CreateExamRequest createExamRequest);
     UpdateExamResponse updateExam(UpdateExamRequest updateExamRequest);
@@ -16,4 +19,7 @@ public interface ExamService {
     void deleteExamById(Long id);
     void addQuestionToExam(Long examId, Long questionId);
     void removeQuestionFromExam(Long examId, Long questionId);
+    void extendExamEndDate(Long examId, LocalDateTime newEndDate);
+//    void markQuestionsAsEditableIfNoOtherActiveExams(Long examId);
+//    void markQuestionsAsNotEditable(Long examId);
 }

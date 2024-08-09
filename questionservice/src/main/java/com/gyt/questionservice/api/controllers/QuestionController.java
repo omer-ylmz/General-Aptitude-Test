@@ -3,6 +3,7 @@ package com.gyt.questionservice.api.controllers;
 import com.gyt.questionservice.business.abstracts.QuestionService;
 import com.gyt.questionservice.business.dtos.request.create.CreateOptionRequest;
 import com.gyt.questionservice.business.dtos.request.create.CreateQuestionRequest;
+import com.gyt.questionservice.business.dtos.request.update.UpdateQuestionEditableRequest;
 import com.gyt.questionservice.business.dtos.request.update.UpdateQuestionRequest;
 import com.gyt.questionservice.business.dtos.response.create.CreateOptionResponse;
 import com.gyt.questionservice.business.dtos.response.create.CreateQuestionResponse;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -75,6 +78,14 @@ public class QuestionController {
         log.info("Option added to question with ID: {} successfully", questionId);
         return response;
     }
+
+    @PostMapping("/updateQuestionsEditableStatus")
+    @ResponseStatus(HttpStatus.OK)
+    public void UpdateQuestionsEditableStatus(@RequestBody UpdateQuestionEditableRequest request) {
+        questionService.updateQuestionsEditableStatus(request);
+
+    }
+
 
 
 }
