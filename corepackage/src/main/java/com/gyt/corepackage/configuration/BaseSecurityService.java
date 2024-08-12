@@ -12,19 +12,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class BaseSecurityService {
     private static final String[] WHITE_LIST_URLS = {
-            "/swagger-ui/**",
+            "/swagger-ui/",       // Swagger UI ve ilgili dokümanlar
             "/v2/api-docs",
             "/v3/api-docs",
-            "/v3/api-docs/**",
-            "/v1/auth/**",
+            "/v1/auth/",          // Auth endpoint'leri
+            "/actuator/**",         // Actuator endpoint'leri
     };
+
     private final JwtAuthFilter jwtAuthFilter;
 
-    public HttpSecurity configureCoreSecurity(HttpSecurity httpSecurity) throws Exception
-    {
+    public HttpSecurity configureCoreSecurity(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(req-> req.requestMatchers(WHITE_LIST_URLS).permitAll())
+                .authorizeHttpRequests(req -> req.requestMatchers(WHITE_LIST_URLS).permitAll())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity;
