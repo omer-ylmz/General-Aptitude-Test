@@ -94,6 +94,7 @@ public class QuestionManager implements QuestionService {
         Question foundQuestion = questionRepository.findById(request.getId()).orElseThrow();
 
         questionBusinessRules.userAuthorizationCheck(foundQuestion.getCreatorId());
+        questionBusinessRules.checkIfQuestionIsEditable(foundQuestion.getIsEditable());
 
         Question question = questionMapper.updateRequestToQuestion(request);
         question.setCreatorId(foundQuestion.getCreatorId());
@@ -152,6 +153,7 @@ public class QuestionManager implements QuestionService {
         Question foundQuestion = questionRepository.findById(id).orElseThrow();
 
         questionBusinessRules.userAuthorizationCheck(foundQuestion.getCreatorId());
+        questionBusinessRules.checkIfQuestionIsEditable(foundQuestion.getIsEditable());
 
         questionRepository.deleteById(id);
 
@@ -168,6 +170,7 @@ public class QuestionManager implements QuestionService {
 
         Question question = questionRepository.findById(questionId).orElseThrow();
 
+        questionBusinessRules.checkIfQuestionIsEditable(question.getIsEditable());
         optionBusinessRules.upToFiveAnswerChecks(question.getOptions().size());
         optionBusinessRules.textAndImageValidationRule(request.getText(), request.getImageUrl());
 
@@ -186,11 +189,15 @@ public class QuestionManager implements QuestionService {
 
     @Override
     public void updateQuestionsEditableStatus(UpdateQuestionEditableRequest request) {
+        log.info("Updating question editable status for request: {}", request);
+
         List<Question> questions = questionRepository.findAllById(request.getQuestionIds());
         for (Question question : questions) {
             question.setIsEditable(request.isEditable());
         }
         questionRepository.saveAll(questions);
+
+        log.info("Updated {} questions with editable status: {}", questions.size(), request.isEditable());
     }
 
 

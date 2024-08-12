@@ -6,6 +6,7 @@ import com.gyt.questionservice.business.dtos.response.get.GetOptionResponse;
 import com.gyt.questionservice.business.dtos.response.getAll.GetAllOptionResponse;
 import com.gyt.questionservice.business.dtos.response.update.UpdateOptionResponse;
 import com.gyt.questionservice.business.rules.OptionBusinessRules;
+import com.gyt.questionservice.business.rules.QuestionBusinessRules;
 import com.gyt.questionservice.dataAccess.abstacts.OptionRepository;
 import com.gyt.questionservice.entities.Option;
 import com.gyt.questionservice.mapper.OptionMapper;
@@ -26,6 +27,7 @@ import java.util.List;
 public class OptionManager implements OptionService {
     private final OptionRepository optionRepository;
     private final OptionBusinessRules optionBusinessRules;
+    private final QuestionBusinessRules questionBusinessRules;
 
 
     @Override
@@ -37,6 +39,7 @@ public class OptionManager implements OptionService {
         Option existingOption = optionRepository.findById(request.getId()).orElseThrow();
 
         optionBusinessRules.userAuthorizationCheck(existingOption.getQuestion().getCreatorId());
+        questionBusinessRules.checkIfQuestionIsEditable(existingOption.getQuestion().getIsEditable());
         optionBusinessRules.textAndImageValidationRule(request.getText(), request.getImageUrl());
         optionBusinessRules.validateCorrectOption(request);
 
@@ -84,6 +87,7 @@ public class OptionManager implements OptionService {
         List<Option> options = option.getQuestion().getOptions();
 
         optionBusinessRules.userAuthorizationCheck(option.getQuestion().getCreatorId());
+        questionBusinessRules.checkIfQuestionIsEditable(option.getQuestion().getIsEditable());
         optionBusinessRules.atLeastTwoAnswerChecks(options);
         optionBusinessRules.ensureAtLeastOneCorrectOption(option.getQuestion().getId(), optionId);
 

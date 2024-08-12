@@ -50,4 +50,11 @@ public class QuestionBusinessRules {
             throw new BusinessException(messageService.getMessage(Messages.QuestionErrors.TextOrImageUrlError));
         }
     }
+
+    public void checkIfQuestionIsEditable(Boolean editable) {
+        if (!editable) {
+            log.error("Question update is restricted due to exam status started or finished");
+            throw new BusinessException(messageService.getMessage(Messages.QuestionErrors.QuestionUpdateRestrictedDueToExamStatus));
+        }
+    }
 }

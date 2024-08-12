@@ -5,6 +5,7 @@ public class Messages {
         public static final String QuestionShouldBeExist = "questionShouldBeExist";
         public static final String UserAuthorityError = "userAuthorityError";
         public static final String TextOrImageUrlError = "textOrImageUrlError";
+        public static final String QuestionUpdateRestrictedDueToExamStatus = "questionUpdateRestrictedDueToExamStatus";
     }
 
     public static class OptionsErrors{

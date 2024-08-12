@@ -3,7 +3,6 @@ package com.gyt.examservice.business.concretes;
 import com.gyt.corepackage.business.abstracts.MessageService;
 import com.gyt.corepackage.utils.exceptions.types.BusinessException;
 import com.gyt.examservice.api.clients.ManagementServiceClient;
-import com.gyt.examservice.api.clients.QuestionServiceClient;
 import com.gyt.examservice.business.abstracts.ExamService;
 import com.gyt.examservice.business.dtos.RuleDTO;
 import com.gyt.examservice.business.dtos.request.create.CreateExamRequest;
@@ -20,7 +19,6 @@ import com.gyt.examservice.business.rules.ExamBusinessRules;
 import com.gyt.examservice.dataAccess.abstracts.ExamRepository;
 import com.gyt.examservice.entities.concretes.Exam;
 import com.gyt.examservice.entities.concretes.Rule;
-import com.gyt.examservice.entities.enums.Status;
 import com.gyt.examservice.mapper.ExamMapper;
 import com.gyt.examservice.mapper.RuleMapper;
 import com.gyt.questionservice.GrpcGetQuestionRequest;
@@ -28,6 +26,7 @@ import com.gyt.questionservice.GrpcGetQuestionResponse;
 import com.gyt.questionservice.QuestionServiceGrpc;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,9 +37,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ExamManager implements ExamService {
@@ -51,13 +50,14 @@ public class ExamManager implements ExamService {
     private final RuleMapper ruleMapper;
     private final ExamBusinessRules examBusinessRules;
     private final MessageService messageService;
-    private final QuestionServiceClient questionServiceClient;
 
 
     @Override
     @Transactional
     public CreateExamResponse createExam(CreateExamRequest createExamRequest) {
         //Todo grpcden giden istek de soru yoksa hata fırlatmalı
+        log.info("Creating exam with request: {}", createExamRequest);
+
         examBusinessRules.validateExamDates(createExamRequest.getStartDate(), createExamRequest.getEndDate());
         examBusinessRules.validateUniqueQuestions(createExamRequest.getQuestionIds());
 
@@ -84,18 +84,21 @@ public class ExamManager implements ExamService {
         createExamResponse.setQuestions(fetchAndMapQuestions(createExamRequest.getQuestionIds()));
         createExamResponse.setRules(createRuleResponses);
 
+        log.info("Created exam with ID: {}", createExamResponse.getId());
+
         return createExamResponse;
     }
 
     @Override
     @Transactional
     public UpdateExamResponse updateExam(UpdateExamRequest updateExamRequest) {
+        log.info("Updating exam with request: {}", updateExamRequest);
+
         examBusinessRules.validateExamDates(updateExamRequest.getStartDate(), updateExamRequest.getEndDate());
         examBusinessRules.validateUniqueQuestions(updateExamRequest.getQuestionIds());
 
 
-        Exam existingExam = examRepository.findById(updateExamRequest.getId())
-                .orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+        Exam existingExam = examRepository.findById(updateExamRequest.getId()).orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
 
         examBusinessRules.checkIfExamCanBeModified(existingExam.getStatus());
 
@@ -111,16 +114,17 @@ public class ExamManager implements ExamService {
         UpdateExamResponse updateExamResponse = examMapper.updateExamToResponse(existingExam);
         updateExamResponse.setQuestions(fetchAndMapQuestions(updateExamRequest.getQuestionIds()));
 
+        log.info("Updated exam with ID: {}", updateExamResponse.getId());
+
         return updateExamResponse;
     }
 
     public GetExamResponse getExamById(Long examId) {
-        Exam exam = examRepository.findById(examId)
-                .orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+        log.info("Fetching exam by ID: {}", examId);
 
-        List<RuleDTO> ruleDTOs = exam.getRules().stream()
-                .map(ruleMapper::ruleToRuleDTO)
-                .collect(Collectors.toList());
+        Exam exam = examRepository.findById(examId).orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+
+        List<RuleDTO> ruleDTOs = exam.getRules().stream().map(ruleMapper::ruleToRuleDTO).collect(Collectors.toList());
 
         List<GetQuestionResponse> questionResponses = fetchAndMapQuestions(exam.getQuestionIds());
 
@@ -128,15 +132,18 @@ public class ExamManager implements ExamService {
         getExamResponse.setQuestions(questionResponses);
         getExamResponse.setRules(ruleDTOs);
 
+        log.info("Fetched exam with ID: {}", examId);
+
         return getExamResponse;
     }
 
     @Override
     public Page<GetAllExamResponse> getAllExam(int page, int size) {
+        log.info("Fetching all exams with page: {} and size: {}", page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
         Page<Exam> examPage = examRepository.findAll(pageable);
 
-        return examPage.map(exam -> {
+        Page<GetAllExamResponse> responsePage = examPage.map(exam -> {
             GetAllExamResponse response = examMapper.getAllExamToResponse(exam);
 
             List<GetQuestionResponse> questionResponses = fetchAndMapQuestions(exam.getQuestionIds());
@@ -149,12 +156,17 @@ public class ExamManager implements ExamService {
 
             return response;
         });
+
+        log.info("Fetched {} exams", responsePage.getTotalElements());
+
+        return responsePage;
     }
 
     @Override
     public void deleteExamById(Long id) {
-        Exam exam = examRepository.findById(id).orElseThrow(
-                () -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+        log.info("Deleting exam by ID: {}", id);
+
+        Exam exam = examRepository.findById(id).orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
 
         GetUserResponse authenticatedUser = managementServiceClient.getAuthenticatedUser();
 
@@ -162,13 +174,16 @@ public class ExamManager implements ExamService {
         examBusinessRules.checkIfExamCanBeModified(exam.getStatus());
 
         examRepository.deleteById(id);
+
+        log.info("Deleted exam with ID: {}", id);
     }
 
     @Override
     @Transactional
     public void addQuestionToExam(Long examId, Long questionId) {
-        Exam exam = examRepository.findById(examId).orElseThrow(
-                () -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+        log.info("Adding question ID: {} to exam ID: {}", questionId, examId);
+
+        Exam exam = examRepository.findById(examId).orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
 
         GetUserResponse authenticatedUser = managementServiceClient.getAuthenticatedUser();
 
@@ -179,13 +194,14 @@ public class ExamManager implements ExamService {
         exam.getQuestionIds().add(questionId);
         examRepository.save(exam);
 
-
+        log.info("Added question ID: {} to exam ID: {}", questionId, examId);
     }
 
     @Override
     public void removeQuestionFromExam(Long examId, Long questionId) {
-        Exam exam = examRepository.findById(examId).orElseThrow(
-                () -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+        log.info("Removing question ID: {} from exam ID: {}", questionId, examId);
+
+        Exam exam = examRepository.findById(examId).orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
 
         GetUserResponse authenticatedUser = managementServiceClient.getAuthenticatedUser();
 
@@ -197,12 +213,14 @@ public class ExamManager implements ExamService {
         exam.getQuestionIds().remove(questionId);
         examRepository.save(exam);
 
+        log.info("Removed question ID: {} from exam ID: {}", questionId, examId);
     }
 
     @Override
     public void extendExamEndDate(Long examId, LocalDateTime newEndDate) {
-        Exam exam = examRepository.findById(examId).orElseThrow(
-                () -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
+        log.info("Extending end date of exam ID: {} to new end date: {}", examId, newEndDate);
+
+        Exam exam = examRepository.findById(examId).orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
 
         GetUserResponse authenticatedUser = managementServiceClient.getAuthenticatedUser();
 
@@ -211,38 +229,14 @@ public class ExamManager implements ExamService {
 
         exam.setEndDate(newEndDate);
         examRepository.save(exam);
+
+        log.info("Extended end date of exam ID: {} to new end date: {}", examId, newEndDate);
     }
-
-//    @Override
-//    public void markQuestionsAsNotEditable(Long examId) {
-//        Exam exam = examRepository.findById(examId)
-//                .orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
-//
-//        if (exam.getStatus() == Status.IN_PROGRESS) {
-//            questionServiceClient.updateQuestionsEditableStatus(exam.getQuestionIds(), false);
-//        }
-//    }
-
-//    @Override
-//    public void markQuestionsAsEditableIfNoOtherActiveExams(Long examId) {
-//        Exam exam = examRepository.findById(examId)
-//                .orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
-//
-//        if (exam.getStatus() == Status.FINISHED) {
-//            List<Long> questionIds = exam.getQuestionIds();
-//            boolean existsInAnotherActiveExam = examRepository.existsInAnotherInProgressExamWithQuestions(questionIds);
-//
-//            if (!existsInAnotherActiveExam) {
-//                questionServiceClient.updateQuestionsEditableStatus(questionIds, true);
-//            }
-//        }
-//    }
-
-
-
 
 
     private List<GetQuestionResponse> fetchAndMapQuestions(List<Long> questionIds) {
+        log.info("Fetching questions for IDs: {}", questionIds);
+
         List<GetQuestionResponse> getQuestionResponses = new ArrayList<>();
         for (long questionId : questionIds) {
             GrpcGetQuestionRequest request = GrpcGetQuestionRequest.newBuilder().setId(questionId).build();
@@ -250,13 +244,13 @@ public class ExamManager implements ExamService {
 
             GetQuestionResponse getQuestionResponse = examMapper.grpcGetQuestionResponseToResponse(response);
 
-            List<OptionDTO> optionDTOs = response.getOptionsList().stream()
-                    .map(option -> new OptionDTO(option.getId(), option.getText(), option.getImageUrl()))
-                    .collect(Collectors.toList());
+            List<OptionDTO> optionDTOs = response.getOptionsList().stream().map(option -> new OptionDTO(option.getId(), option.getText(), option.getImageUrl())).collect(Collectors.toList());
 
             getQuestionResponse.setOptions(optionDTOs);
             getQuestionResponses.add(getQuestionResponse);
         }
+        log.info("Fetched {} questions", getQuestionResponses.size());
+
         return getQuestionResponses;
     }
 }

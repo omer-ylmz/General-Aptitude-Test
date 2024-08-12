@@ -1,8 +1,10 @@
 package com.gyt.examservice.business.abstracts;
 
+import com.gyt.corepackage.business.abstracts.MessageService;
 import com.gyt.corepackage.utils.exceptions.types.BusinessException;
 import com.gyt.examservice.api.clients.QuestionServiceClient;
 import com.gyt.examservice.business.dtos.request.update.UpdateQuestionEditableRequest;
+import com.gyt.examservice.business.messages.Messages;
 import com.gyt.examservice.dataAccess.abstracts.ExamRepository;
 import com.gyt.examservice.entities.concretes.Exam;
 import com.gyt.examservice.entities.enums.Status;
@@ -18,6 +20,7 @@ import java.util.List;
 public class ExamStatusUpdaterService {
     private final ExamRepository examRepository;
     private final QuestionServiceClient questionServiceClient;
+    private final MessageService messageService;
 
     @Scheduled(fixedRate = 60000) // 1 dakikada bir çalışacak
     public void updateExamStatuses() {
@@ -40,9 +43,9 @@ public class ExamStatusUpdaterService {
 
     private void markQuestionsAsNotEditable(Long examId) {
         Exam exam = examRepository.findByIdWithQuestionIds(examId)
-                .orElseThrow(() -> new BusinessException("Sınav bulunamadı"));
+                .orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
 
-        UpdateQuestionEditableRequest request = new UpdateQuestionEditableRequest(exam.getQuestionIds(),false);
+        UpdateQuestionEditableRequest request = new UpdateQuestionEditableRequest(exam.getQuestionIds(), false);
 
 
         if (exam.getStatus() == Status.IN_PROGRESS) {
@@ -52,9 +55,9 @@ public class ExamStatusUpdaterService {
 
     private void markQuestionsAsEditableIfNoOtherActiveExams(Long examId) {
         Exam exam = examRepository.findByIdWithQuestionIds(examId)
-                .orElseThrow(() -> new BusinessException("Sınav bulunamadı"));
+                .orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
 
-        UpdateQuestionEditableRequest request = new UpdateQuestionEditableRequest(exam.getQuestionIds(),true);
+        UpdateQuestionEditableRequest request = new UpdateQuestionEditableRequest(exam.getQuestionIds(), true);
 
         if (exam.getStatus() == Status.FINISHED) {
             List<Long> questionIds = exam.getQuestionIds();

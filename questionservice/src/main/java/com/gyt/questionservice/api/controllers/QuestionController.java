@@ -82,8 +82,9 @@ public class QuestionController {
     @PostMapping("/updateQuestionsEditableStatus")
     @ResponseStatus(HttpStatus.OK)
     public void UpdateQuestionsEditableStatus(@RequestBody UpdateQuestionEditableRequest request) {
+        log.info("Received request to update question editable status: {}", request);
         questionService.updateQuestionsEditableStatus(request);
-
+        log.info("Successfully processed update request for question editable status: {}", request);
     }
 
 

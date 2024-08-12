@@ -19,6 +19,11 @@ public class Paths {
         public static final String ServiceBasePackage = "com.gyt.searchservice";
     }
 
+    public static class Mail{
+        public static final String ServiceBasePackage = "com.gyt.mailservice";
+    }
+
+
 
 
 
