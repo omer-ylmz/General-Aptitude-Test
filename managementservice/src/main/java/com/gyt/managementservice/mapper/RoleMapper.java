@@ -7,7 +7,7 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface RoleMapper {
-    RoleMapper INSTANCE = Mappers.getMapper(RoleMapper.class);
+
 
     GetRoleResponse getRoleToResponse (Role role);
     Role getResponseToRole (GetRoleResponse response);

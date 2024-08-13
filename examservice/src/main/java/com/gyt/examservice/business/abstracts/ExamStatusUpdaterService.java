@@ -34,11 +34,8 @@ public class ExamStatusUpdaterService {
         }
 
         // Devam eden sınavları güncelle
-        int finishedExamsCount = examRepository.updateStatusToFinished(now);
-        if (finishedExamsCount > 0) {
-            List<Exam> finishedExams = examRepository.findAllByStatus(Status.FINISHED);
-            finishedExams.forEach(exam -> markQuestionsAsEditableIfNoOtherActiveExams(exam.getId()));
-        }
+        examRepository.updateStatusToFinished(now);
+
     }
 
     private void markQuestionsAsNotEditable(Long examId) {
@@ -53,20 +50,6 @@ public class ExamStatusUpdaterService {
         }
     }
 
-    private void markQuestionsAsEditableIfNoOtherActiveExams(Long examId) {
-        Exam exam = examRepository.findByIdWithQuestionIds(examId)
-                .orElseThrow(() -> new BusinessException(messageService.getMessage(Messages.ExamErrors.ExamShouldBeExist)));
 
-        UpdateQuestionEditableRequest request = new UpdateQuestionEditableRequest(exam.getQuestionIds(), true);
-
-        if (exam.getStatus() == Status.FINISHED) {
-            List<Long> questionIds = exam.getQuestionIds();
-            boolean existsInAnotherActiveExam = examRepository.existsInAnotherInProgressExamWithQuestions(questionIds);
-
-            if (!existsInAnotherActiveExam) {
-                questionServiceClient.updateQuestionsEditableStatus(request);
-            }
-        }
-    }
 
 }

@@ -12,6 +12,7 @@ public class Messages {
         public static final String QuestionAlreadyExistsInExam = "questionAlreadyExistsInExam";
         public static final String LastQuestionCanNotBeRemoved = "lastQuestionCanNotBeRemoved";
         public static final String InvalidExamStatusForExtension = "invalidExamStatusForExtension";
+        public static final String GrpcQuestionShouldBeExists = "grpcQuestionShouldBeExists";
     }
 
     public static class RuleErrors{

@@ -10,9 +10,11 @@ public class Messages {
     public static class UserErrors{
         public static final String UserShouldBeExists = "userShouldBeExists";
         public static final String UpdateAuthorityError = "updateAuthorityError";
+        public static final String UserWithThisMailExist = "userWithThisMailExist";
     }
 
     public static class RoleErrors{
         public static final String RoleShouldBeExists = "roleShouldBeExists";
     }
+
 }

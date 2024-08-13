@@ -17,17 +17,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class QuestionBusinessRules {
-    private final QuestionRepository questionRepository;
     private final MessageService messageService;
     private final ManagementServiceClient managementServiceClient;
 
-    public void questionShouldBeExist(Long id) {
-        Optional<Question> question = questionRepository.findById(id);
-        if (question.isEmpty()) {
-            log.error("Question with ID: {} does not exist", id);
-            throw new BusinessException(messageService.getMessage(Messages.QuestionErrors.QuestionShouldBeExist));
-        }
-    }
 
     public void userAuthorizationCheck(Long creatorId) {
         GetUserResponse authenticatedUser = managementServiceClient.getAuthenticatedUser();

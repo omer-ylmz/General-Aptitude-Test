@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
+
 
     @Mapping(source = "password", target = "password", qualifiedByName = "encodePassword")
     User registerRequestToUser(RegisterRequest registerRequest, @Context PasswordEncoder passwordEncoder);

@@ -1,8 +1,10 @@
 package com.gyt.questionservice.business.concretes;
 
+import com.gyt.corepackage.business.abstracts.MessageService;
 import com.gyt.corepackage.events.question.CreatedQuestionEvent;
 import com.gyt.corepackage.events.question.DeletedQuestionEvent;
 import com.gyt.corepackage.events.question.UpdatedQuestionEvent;
+import com.gyt.corepackage.utils.exceptions.types.BusinessException;
 import com.gyt.questionservice.api.clients.ManagementServiceClient;
 import com.gyt.questionservice.business.abstracts.OptionService;
 import com.gyt.questionservice.business.abstracts.QuestionService;
@@ -17,6 +19,7 @@ import com.gyt.questionservice.business.dtos.response.get.GetUserResponse;
 import com.gyt.questionservice.business.dtos.response.get.OptionDTO;
 import com.gyt.questionservice.business.dtos.response.getAll.GetAllQuestionResponse;
 import com.gyt.questionservice.business.dtos.response.update.UpdateQuestionResponse;
+import com.gyt.questionservice.business.messages.Messages;
 import com.gyt.questionservice.business.rules.OptionBusinessRules;
 import com.gyt.questionservice.business.rules.QuestionBusinessRules;
 import com.gyt.questionservice.dataAccess.abstacts.QuestionRepository;
@@ -47,6 +50,7 @@ public class QuestionManager implements QuestionService {
     private final OptionService optionService;
     private final QuestionProducer questionProducer;
     private final QuestionMapper questionMapper;
+    private final MessageService messageService;
 
     @Override
     public CreateQuestionResponse createQuestion(CreateQuestionRequest request) {
@@ -88,11 +92,10 @@ public class QuestionManager implements QuestionService {
     public UpdateQuestionResponse updateQuestion(UpdateQuestionRequest request) {
         log.info("Update request received for question with ID: {}", request.getId());
 
-        questionBusinessRules.questionShouldBeExist(request.getId());
+        Question foundQuestion = questionRepository.findById(request.getId()).orElseThrow(
+                () -> new BusinessException(messageService.getMessage(Messages.QuestionErrors.QuestionShouldBeExist)));
+
         questionBusinessRules.textAndImageValidationRule(request.getText(), request.getImageUrl());
-
-        Question foundQuestion = questionRepository.findById(request.getId()).orElseThrow();
-
         questionBusinessRules.userAuthorizationCheck(foundQuestion.getCreatorId());
         questionBusinessRules.checkIfQuestionIsEditable(foundQuestion.getIsEditable());
 
@@ -111,9 +114,9 @@ public class QuestionManager implements QuestionService {
     public GetQuestionResponse getQuestionByID(Long id) {
         log.info("Get request received for question with ID: {}", id);
 
-        questionBusinessRules.questionShouldBeExist(id);
+        Question question = questionRepository.findById(id).orElseThrow(
+                () -> new BusinessException(messageService.getMessage(Messages.QuestionErrors.QuestionShouldBeExist)));
 
-        Question question = questionRepository.findById(id).orElseThrow();
         List<OptionDTO> optionDTOS = question.getOptions().stream()
                 .map(OptionMapper.INSTANCE::optionToDTO).toList();
 
@@ -148,9 +151,8 @@ public class QuestionManager implements QuestionService {
     public void deleteQuestionByID(Long id) {
         log.info("Delete request received for question with ID: {}", id);
 
-        questionBusinessRules.questionShouldBeExist(id);
-
-        Question foundQuestion = questionRepository.findById(id).orElseThrow();
+        Question foundQuestion = questionRepository.findById(id).orElseThrow(
+                () -> new BusinessException(messageService.getMessage(Messages.QuestionErrors.QuestionShouldBeExist)));
 
         questionBusinessRules.userAuthorizationCheck(foundQuestion.getCreatorId());
         questionBusinessRules.checkIfQuestionIsEditable(foundQuestion.getIsEditable());
@@ -166,9 +168,8 @@ public class QuestionManager implements QuestionService {
     public CreateOptionResponse addOptionToQuestion(Long questionId, CreateOptionRequest request) {
         log.info("Add option request received for question with ID: {}", questionId);
 
-        questionBusinessRules.questionShouldBeExist(questionId);
-
-        Question question = questionRepository.findById(questionId).orElseThrow();
+        Question question = questionRepository.findById(questionId).orElseThrow(
+                () -> new BusinessException(messageService.getMessage(Messages.QuestionErrors.QuestionShouldBeExist)));
 
         questionBusinessRules.checkIfQuestionIsEditable(question.getIsEditable());
         optionBusinessRules.upToFiveAnswerChecks(question.getOptions().size());

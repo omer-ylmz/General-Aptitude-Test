@@ -23,10 +23,13 @@ public class AuthManager implements AuthService {
     @Override
     public String login(LoginRequest request) {
         log.info("Login attempt for email: {}", request.getEmail());
+
         authBusinessRules.authenticationControl(request);
+
         UserDetails user = userService.loadUserByUsername(request.getEmail());
-        User foundUser = userService.getByEmail(request.getEmail());
+
         log.info("Login successful for email: {}", request.getEmail());
+
         return jwtService.generateToken(user.getUsername(), user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
     }
 }

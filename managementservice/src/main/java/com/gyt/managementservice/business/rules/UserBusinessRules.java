@@ -47,6 +47,14 @@ public class UserBusinessRules {
         log.info("User found with email: {}", email);
     }
 
+    public void mailNoCanNotBeDuplicated(String email){
+        Optional<User> foundUser = userRepository.findByEmail(email);
+        if (foundUser.isPresent()){
+            throw new BusinessException(messageService.getMessage(Messages.UserErrors.UserWithThisMailExist));
+        }
+    }
+
+
     public void userUpdateAuthorizationCheck(GetUserResponse user, Long id) {
         List<String> authorities = user.getRoles();
         boolean hasOrganizationRole = false;

@@ -19,5 +19,3 @@ public class Messages {
     }
 }
 
-
-// TODO: 1.08.2024 türkçe karakter izni bakılacak

@@ -24,6 +24,7 @@ import com.gyt.examservice.mapper.RuleMapper;
 import com.gyt.questionservice.GrpcGetQuestionRequest;
 import com.gyt.questionservice.GrpcGetQuestionResponse;
 import com.gyt.questionservice.QuestionServiceGrpc;
+import io.grpc.StatusRuntimeException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +56,6 @@ public class ExamManager implements ExamService {
     @Override
     @Transactional
     public CreateExamResponse createExam(CreateExamRequest createExamRequest) {
-        //Todo grpcden giden istek de soru yoksa hata fırlatmalı
         log.info("Creating exam with request: {}", createExamRequest);
 
         examBusinessRules.validateExamDates(createExamRequest.getStartDate(), createExamRequest.getEndDate());
@@ -239,15 +239,22 @@ public class ExamManager implements ExamService {
 
         List<GetQuestionResponse> getQuestionResponses = new ArrayList<>();
         for (long questionId : questionIds) {
-            GrpcGetQuestionRequest request = GrpcGetQuestionRequest.newBuilder().setId(questionId).build();
-            GrpcGetQuestionResponse response = questionServiceBlockingStub.getQuestionByID(request);
+            try {
+                GrpcGetQuestionRequest request = GrpcGetQuestionRequest.newBuilder().setId(questionId).build();
+                GrpcGetQuestionResponse response = questionServiceBlockingStub.getQuestionByID(request);
 
-            GetQuestionResponse getQuestionResponse = examMapper.grpcGetQuestionResponseToResponse(response);
+                GetQuestionResponse getQuestionResponse = examMapper.grpcGetQuestionResponseToResponse(response);
 
-            List<OptionDTO> optionDTOs = response.getOptionsList().stream().map(option -> new OptionDTO(option.getId(), option.getText(), option.getImageUrl())).collect(Collectors.toList());
+                List<OptionDTO> optionDTOs = response.getOptionsList().stream()
+                        .map(option -> new OptionDTO(option.getId(), option.getText(), option.getImageUrl()))
+                        .collect(Collectors.toList());
 
-            getQuestionResponse.setOptions(optionDTOs);
-            getQuestionResponses.add(getQuestionResponse);
+                getQuestionResponse.setOptions(optionDTOs);
+                getQuestionResponses.add(getQuestionResponse);
+            } catch (StatusRuntimeException e) {
+                log.error("Error fetching question with ID: {}", questionId, e);
+                throw new BusinessException(messageService.getMessage(Messages.ExamErrors.GrpcQuestionShouldBeExists) + questionId);
+            }
         }
         log.info("Fetched {} questions", getQuestionResponses.size());
 
