@@ -24,14 +24,14 @@ scrape_configs:
     static_configs:
       - targets: ['host.docker.internal:9003'] ## only for demo purposes don't use host.docker.internal in production
         labels:
-          application: 'Inventory Service'
+          application: 'Exam Service'
   - job_name: 'searchservice'
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['host.docker.internal:9004'] ## only for demo purposes don't use host.docker.internal in production
         labels:
           application: 'Search Service'
-  - job_name: 'emailservice'
+  - job_name: 'mailservice'
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: [ 'host.docker.internal:9005' ] ## only for demo purposes don't use host.docker.internal in production
