@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 public class GetAllUserResponse {
-    private int id;
+    private Long id;
     private String email;
     private List<String> roleNames;
 }

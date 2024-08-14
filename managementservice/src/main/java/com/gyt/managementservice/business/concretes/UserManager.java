@@ -146,11 +146,7 @@ public class UserManager implements UserService {
         log.debug("Setting user authorities");
 
         for (Role role : authorities) {
-            if (role.getName().equals("organization")) {
-                return Set.of(role);
-            } else {
-                return Set.of(role);
-            }
+            return Set.of(role);
         }
         return authorities;
     }

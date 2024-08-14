@@ -5,7 +5,6 @@ import com.gyt.managementservice.business.abstracts.AuthService;
 import com.gyt.managementservice.business.abstracts.UserService;
 import com.gyt.managementservice.business.dtos.request.LoginRequest;
 import com.gyt.managementservice.business.rules.AuthBusinessRules;
-import com.gyt.managementservice.entities.concretes.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;

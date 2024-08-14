@@ -233,8 +233,8 @@ public class ExamManager implements ExamService {
         log.info("Extended end date of exam ID: {} to new end date: {}", examId, newEndDate);
     }
 
-
-    private List<GetQuestionResponse> fetchAndMapQuestions(List<Long> questionIds) {
+    @Override
+    public List<GetQuestionResponse> fetchAndMapQuestions(List<Long> questionIds) {
         log.info("Fetching questions for IDs: {}", questionIds);
 
         List<GetQuestionResponse> getQuestionResponses = new ArrayList<>();
