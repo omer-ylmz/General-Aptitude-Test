@@ -14,7 +14,7 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface OptionMapper {
-    OptionMapper INSTANCE = Mappers.getMapper(OptionMapper.class);
+
 
     OptionDTO optionToDTO(Option option);
 

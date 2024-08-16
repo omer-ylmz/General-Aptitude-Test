@@ -48,9 +48,11 @@ public class QuestionManager implements QuestionService {
     private final QuestionBusinessRules questionBusinessRules;
     private final OptionBusinessRules optionBusinessRules;
     private final OptionService optionService;
+    private final OptionMapper optionMapper;
     private final QuestionProducer questionProducer;
     private final QuestionMapper questionMapper;
     private final MessageService messageService;
+
 
     @Override
     public CreateQuestionResponse createQuestion(CreateQuestionRequest request) {
@@ -71,13 +73,13 @@ public class QuestionManager implements QuestionService {
         for (CreateOptionRequest createOptionRequest : request.getOptionRequestList()) {
             optionBusinessRules.textAndImageValidationRule(createOptionRequest.getText(), createOptionRequest.getImageUrl());
 
-            Option option = OptionMapper.INSTANCE.createRequestToOption(createOptionRequest);
+            Option option = optionMapper.createRequestToOption(createOptionRequest);
             option.setQuestion(question);
 
             optionBusinessRules.textAndImageValidationRule(option.getText(), option.getImageUrl());
 
             optionService.saveOption(option);
-            options.add(OptionMapper.INSTANCE.createOptionToResponse(option));
+            options.add(optionMapper.createOptionToResponse(option));
         }
 
         CreateQuestionResponse questionToResponse = questionMapper.createQuestionToResponse(question);
@@ -118,7 +120,7 @@ public class QuestionManager implements QuestionService {
                 () -> new BusinessException(messageService.getMessage(Messages.QuestionErrors.QuestionShouldBeExist)));
 
         List<OptionDTO> optionDTOS = question.getOptions().stream()
-                .map(OptionMapper.INSTANCE::optionToDTO).toList();
+                .map(optionMapper::optionToDTO).toList();
 
         GetQuestionResponse response = questionMapper.getQuestionToResponse(question);
         response.setOptions(optionDTOS);
@@ -136,7 +138,7 @@ public class QuestionManager implements QuestionService {
         Page<Question> questionsPage = questionRepository.findAll(pageable);
         Page<GetAllQuestionResponse> responsePage = questionsPage.map(
                 question -> {
-                    List<OptionDTO> optionDTOS = question.getOptions().stream().map(OptionMapper.INSTANCE::optionToDTO).toList();
+                    List<OptionDTO> optionDTOS = question.getOptions().stream().map(optionMapper::optionToDTO).toList();
                     GetAllQuestionResponse response = questionMapper.getAllQuestionToResponse(question);
                     response.setOptions(optionDTOS);
                     return response;
@@ -175,7 +177,7 @@ public class QuestionManager implements QuestionService {
         optionBusinessRules.upToFiveAnswerChecks(question.getOptions().size());
         optionBusinessRules.textAndImageValidationRule(request.getText(), request.getImageUrl());
 
-        Option option = OptionMapper.INSTANCE.createRequestToOption(request);
+        Option option = optionMapper.createRequestToOption(request);
         option.setQuestion(question);
 
         optionService.saveOption(option);
@@ -185,7 +187,7 @@ public class QuestionManager implements QuestionService {
 
         log.info("Option added to question with ID: {} successfully", questionId);
 
-        return OptionMapper.INSTANCE.createOptionToResponse(option);
+        return optionMapper.createOptionToResponse(option);
     }
 
     @Override

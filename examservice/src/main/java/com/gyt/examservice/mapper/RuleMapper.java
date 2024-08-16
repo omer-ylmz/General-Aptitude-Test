@@ -1,5 +1,6 @@
 package com.gyt.examservice.mapper;
 
+import com.gyt.corepackage.events.rule.RuleEvent;
 import com.gyt.examservice.business.dtos.RuleDTO;
 import com.gyt.examservice.business.dtos.request.update.UpdateRuleRequest;
 import com.gyt.examservice.business.dtos.response.get.GetRuleResponse;
@@ -20,5 +21,7 @@ public interface RuleMapper {
     GetRuleResponse getRuleToResponse(Rule rule);
 
     GetAllRuleResponse getAllRuleToResponse(Rule rule);
+
+    RuleEvent ruleToRuleEvent(Rule rule);
 
 }

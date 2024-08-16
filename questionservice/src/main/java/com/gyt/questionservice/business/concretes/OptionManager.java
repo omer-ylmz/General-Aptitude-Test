@@ -32,6 +32,7 @@ public class OptionManager implements OptionService {
     private final OptionBusinessRules optionBusinessRules;
     private final QuestionBusinessRules questionBusinessRules;
     private final MessageService messageService;
+    private final OptionMapper optionMapper;
 
 
     @Override
@@ -47,11 +48,11 @@ public class OptionManager implements OptionService {
         optionBusinessRules.textAndImageValidationRule(request.getText(), request.getImageUrl());
         optionBusinessRules.validateCorrectOption(existingOption);
 
-        Option option = OptionMapper.INSTANCE.updateRequestToOption(request);
+        Option option = optionMapper.updateRequestToOption(request);
         option.setQuestion(existingOption.getQuestion());
         optionRepository.save(option);
 
-        UpdateOptionResponse updateOptionResponse = OptionMapper.INSTANCE.updateOptionToResponse(existingOption);
+        UpdateOptionResponse updateOptionResponse = optionMapper.updateOptionToResponse(existingOption);
         updateOptionResponse.setQuestionId(existingOption.getQuestion().getId());
 
         log.info("Option with ID: {} updated successfully", request.getId());
@@ -69,7 +70,7 @@ public class OptionManager implements OptionService {
 
         log.info("Successfully retrieved option with ID: {}", optionId);
 
-        return OptionMapper.INSTANCE.getOptionToResponse(option);
+        return optionMapper.getOptionToResponse(option);
     }
 
     @Override
@@ -80,7 +81,7 @@ public class OptionManager implements OptionService {
         Page<Option> optionsPage = optionRepository.findAll(pageable);
         log.info("Options retrieved successfully for page: {}, size: {}", page, size);
 
-        return optionsPage.map(OptionMapper.INSTANCE::getAllOptionToResponse);
+        return optionsPage.map(optionMapper::getAllOptionToResponse);
     }
 
     @Override
@@ -96,7 +97,7 @@ public class OptionManager implements OptionService {
         optionBusinessRules.atLeastTwoAnswerChecks(options);
         optionBusinessRules.ensureAtLeastOneCorrectOption(option.getQuestion().getId(), optionId);
 
-        options.clear();
+        options.removeIf(opt -> opt.getId().equals(optionId));
         optionRepository.deleteById(optionId); //
 
         log.info("Option with ID: {} deleted successfully", optionId);

@@ -1,5 +1,8 @@
 package com.gyt.examservice.mapper;
 
+import com.gyt.corepackage.events.exam.CreatedExamEvent;
+import com.gyt.corepackage.events.exam.DeletedExamEvent;
+import com.gyt.corepackage.events.exam.UpdatedExamEvent;
 import com.gyt.examservice.business.dtos.request.create.CreateExamRequest;
 import com.gyt.examservice.business.dtos.request.update.UpdateExamRequest;
 import com.gyt.examservice.business.dtos.response.create.CreateExamResponse;
@@ -30,5 +33,11 @@ public interface ExamMapper {
     GetAllExamResponse getAllExamToResponse(Exam exam);
 
     GetQuestionResponse grpcGetQuestionResponseToResponse(GrpcGetQuestionResponse grpcResponse);
+
+    CreatedExamEvent examToCreatedExamEvent(Exam exam);
+
+    UpdatedExamEvent examToUpdatedExamEvent(Exam exam);
+
+    DeletedExamEvent examToDeletedExamEvent(Exam exam);
 
 }

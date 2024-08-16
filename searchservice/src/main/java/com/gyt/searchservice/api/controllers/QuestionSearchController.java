@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("search-service/api/v1/questions")
-public class SearchController {
+public class QuestionSearchController {
     private final QuestionSearchService questionSearchService;
 
     @PostMapping
@@ -20,4 +20,8 @@ public class SearchController {
     public List<Question> searchQuestion(@RequestBody DynamicQuery dynamicQuery){
         return questionSearchService.searchQuestion(dynamicQuery);
     }
+
+
+
+
 }
